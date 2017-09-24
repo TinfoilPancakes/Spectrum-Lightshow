@@ -1,0 +1,15 @@
+- use configure or something similar to check for libraries and which compiler to use and flags
+
+- add more visualizers
+    - add beat detection
+
+- add more color examples
+    - add gifs of gradients
+
+- colors scheme improvements
+    - allow assigning different color schemes to different visualizers
+
+- add windows support
+    - probably just ncurses through cygwin
+    - audio source would be some windows api
+    - use define guards everywhere there are *nix dependent includes
