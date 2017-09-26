@@ -118,7 +118,7 @@ PERF_TEST_INCLUDE_PATH = -I/usr/include
 LIB_PATH = -L/usr/local/lib
 
 # Libs
-LIBS = -lfftw3 -lm -lstdc++ -lrt
+LIBS = -lfftw3 -lm -lstdc++ -lrt -lpthread
 TEST_LIBS = -lgtest -lpthread
 PERF_TEST_LIBS = -lbenchmark -lpthread
 
