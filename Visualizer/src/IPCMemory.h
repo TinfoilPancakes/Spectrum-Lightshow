@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2017/09/15 18:28:30 by prp              2E 54 65 63 68          */
-/*   Updated: 2017/09/25 17:25:15 by prp              50 2E 52 2E 50          */
+/*   Updated: 2017/09/25 19:12:46 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,12 +104,14 @@ public:
   SharedMemoryObject<block_size>() {}
 
   ~SharedMemoryObject<block_size>() {
-
     auto cleanup = false;
+    std::cout << "Shared Memory Out Of Scope. Destroying..." << std::endl;
 
     if (this->get_status_flag() == 1) {
       pthread_mutex_unlock(&this->block_ptr->lock);
       bzero(&this->block_ptr->header, sizeof(uint32_t));
+      std::cout << "Last user of shared memory, cleaning up..\n";
+      std::cout << std::flush;
       cleanup = true;
     } else {
       this->lock();
