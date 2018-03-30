@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                   __                       */
-/*   pa_main.cpp                                   <(o )___                   */
+/*   main.cpp                                      <(o )___                   */
 /*                                                  ( ._> /   - Weh.          */
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/01 11:50:59 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/03/01 11:52:48 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/03/29 17:37:13 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,8 @@ void interrupt_signal(int signal_code) {
 }
 
 int main(int argc, char const* argv[]) {
-	(void)argc;
+	// Parse Configs.
+
 	// Setup Signal Handlers.
 	std::signal(SIGINT, interrupt_signal);
 	// Test the scoping and destructor.

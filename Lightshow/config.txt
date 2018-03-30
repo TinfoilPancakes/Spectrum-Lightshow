@@ -1,0 +1,20 @@
+[lightshow_pi]
+i_sample_freq: 44100
+
+# - Length of FFT sample, Higher Framerate = Smaller Sample.
+i_framerate: 60
+
+# - Interpolate color outputs based on total range.
+# Not Yet Implemented
+b_smoothing: false
+
+# - Ignore values below floor percentage
+f_floor: 0.0
+
+f_low_cutoff: 25.0
+f_mid_cutoff: 50.0
+f_high_cutoff: 75.0
+
+f_low_mult: 1.0
+f_mid_mult: 1.0
+f_high_mult: 1.0

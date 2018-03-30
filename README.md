@@ -1,4 +1,4 @@
-# A tool to extract spectrum data from system audio output.
+# A tool to extract spectrum data from system audio output and make pretty colors :)
 
 ## Please follow the README.md located inside the Visualiser/ directory.
 ### Special thanks to [Darby A Payne](https://github.com/dpayne) for his [open source cli-visualiser](https://github.com/dpayne/cli-visualizer)
