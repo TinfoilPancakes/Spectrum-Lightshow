@@ -1,26 +1,67 @@
-all: main.cpp SharedMemoryObject.hpp SoftPWMControl.hpp GPIOInterface.hpp
-	g++ -std=c++14 main.cpp -o lightshow -lrt -lpthread -O3 -ffast-math
+#
+#	C / C++ Project Template.
+#	Version 0.0.0 r2
+#	Prateek R. Patil
+#
 
-r2: Sources/pa_main.cpp Sources/PulseAudioSource.cpp
-	g++ -std=c++14 \
-	./Sources/pa_main.cpp ./Sources/PulseAudioSource.cpp \
-	-o pulse_test \
-	-lm -lpulse -lpulse-simple -lfftw3 \
-	-O2 -ffast-math \
-	-I./Includes
+NAME		:=	lightshow
 
-r3: test_pulse.cpp Sources/PulseAudioSource.cpp
-	g++ -std=c++14 \
-	test_pulse.cpp ./Sources/PulseAudioSource.cpp \
-	-o pulse_test_orig \
-	-lm -lpulse -lpulse-simple -lfftw3 \
-	-O2 -ffast-math \
-	-I./Includes
+CC			:=	clang++
+C_FLAGS		:=	-Wall -O2 -Wextra
+CXX_FLAGS 	:=	-Wall -O2 -Wextra -std=c++14 -fsanitize=address
+LNK_FLAGS	:=	-Wall -O2 -Wextra -std=c++14 -L. -fsanitize=address
+LNK_LIBS	:=	pthread fftw3 pulse-simple pulse m
 
-clean:
-	rm -f lightshow
+SRC_DIR 	:=	./Sources
+INC_DIR		:=	./Includes
+OBJ_DIR		:=	./Objects
 
-re: clean all
+#	Including source files.
+#	Variable should be named C_FILES or CXX_FILES
 
-.PHONY: clean re
-	
+-include sources.mk
+
+SOURCES		:=	$(addprefix $(SRC_DIR)/, $(C_FILES)) \
+				$(addprefix $(SRC_DIR)/, $(CXX_FILES))
+
+INCUDES		:=	$(addprefix -I , $(INC_DIR))
+
+OBJECTS		:=	$(addprefix $(OBJ_DIR)/, $(patsubst %.c, %.c.o, $(C_FILES))) \
+				$(addprefix $(OBJ_DIR)/, $(patsubst %.cpp, %.cpp.o, $(CXX_FILES)))
+
+LIBRARIES	:=	$(addprefix -l , $(LNK_LIBS))
+
+all : $(NAME)
+
+#	Implicit rule for object files
+
+$(OBJ_DIR)/%.c.o : $(SRC_DIR)/%.c
+	@mkdir -p $(OBJ_DIR)
+	@printf "Compiling [ %s ]: " $<
+	@$(CC) $(C_FLAGS) -c $< -o $@ $(INCUDES)
+	@printf "Done.\n"
+
+$(OBJ_DIR)/%.cpp.o : $(SRC_DIR)/%.cpp
+	@mkdir -p $(OBJ_DIR)
+	@printf "Compiling [ %s ]: " $<
+	@$(CC) $(CXX_FLAGS) -c $< -o $@ $(INCUDES)
+	@printf "Done.\n"
+
+$(NAME) : $(OBJECTS)
+	@printf "Linking [ %s ]: " $(NAME)
+	@$(CC) $(LNK_FLAGS) -o $(NAME) $(OBJECTS) $(INCUDES) $(LIBRARIES)
+	@printf "Done.\n"
+
+fclean : clean
+	@printf "Cleaning [ %s ]: " $(NAME)
+	@rm -rf $(NAME)
+	@printf "Done.\n"
+
+clean :
+	@printf "Cleaning [ %s ]: " $(OBJ_DIR)
+	@rm -rf $(OBJ_DIR)
+	@printf "Done.\n"
+
+re : fclean all
+
+.PHONY : re fclean clean

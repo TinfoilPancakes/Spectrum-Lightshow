@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/11 03:09:06 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/03/29 17:36:04 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/03/30 19:59:15 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ class Configuration {
 	float high_mult = 1.0f;
 
 public:
-	Configuration();
+	Configuration() {}
 
 	Configuration(const std::string& filepath) {
 		INIReader reader(filepath);
@@ -95,6 +95,7 @@ public:
 	inline float get_mid_cutoff() const { return this->mid_cutoff; }
 	inline float get_high_cutoff() const { return this->high_cutoff; }
 
+	inline float get_floor() const { return this->floor; }
 	inline float get_low_mult() const { return this->low_mult; }
 	inline float get_mid_mult() const { return this->mid_mult; }
 	inline float get_high_mult() const { return this->high_mult; }
