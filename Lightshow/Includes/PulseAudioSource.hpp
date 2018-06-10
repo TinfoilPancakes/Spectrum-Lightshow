@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/01 04:38:07 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/03/01 12:06:18 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/06/09 22:19:35 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,9 +46,7 @@ class PulseAudioSource {
 public:
 	/* Default sample specification to use when launching the sink:
 	 * {Bits/Sample, Frequency, ChannelCount} */
-	static constexpr PASampleSpec default_spec = {.format   = PA_SAMPLE_S16NE,
-												  .rate		= 44100,
-												  .channels = 2};
+	static PASampleSpec default_spec;
 
 	/* Method to get the current default Pulseaudio sink. */
 	static std::string get_default_source_name();

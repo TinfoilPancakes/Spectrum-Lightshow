@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/01 11:50:59 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/06/09 22:13:26 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/06/09 22:22:37 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,8 @@ int main(int argc, char const* argv[]) {
 			size_t iter = config.get_floor() * out_count / 100;
 
 			double lsum = 0.0;
-			while (iter < config.get_low_cutoff() * out_count / 100) {
+			size_t lco  = config.get_low_cutoff() * out_count / 100;
+			while (iter < lco) {
 				double real		 = output[iter][0];
 				double imaginary = output[iter][1];
 				lsum += std::sqrt(real * real + imaginary * imaginary);
@@ -95,7 +96,8 @@ int main(int argc, char const* argv[]) {
 			lsum *= config.get_low_mult();
 
 			double msum = 0.0;
-			while (iter < config.get_mid_cutoff() * out_count / 100) {
+			size_t mco  = config.get_low_cutoff() * out_count / 100;
+			while (iter < mco) {
 				double real		 = output[iter][0];
 				double imaginary = output[iter][1];
 				msum += std::sqrt(real * real + imaginary * imaginary);
@@ -104,7 +106,8 @@ int main(int argc, char const* argv[]) {
 			msum *= config.get_mid_mult();
 
 			double hsum = 0.0;
-			while (iter < config.get_high_cutoff() * out_count / 100) {
+			size_t hco  = config.get_low_cutoff() * out_count / 100;
+			while (iter < hco) {
 				double real		 = output[iter][0];
 				double imaginary = output[iter][1];
 				hsum += std::sqrt(real * real + imaginary * imaginary);
