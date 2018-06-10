@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/01 04:38:15 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/03/01 12:20:25 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/06/09 21:54:19 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,13 @@ void pa_state_change_callback(pa_context* context_ptr, void* userdata) {
 		pa_mainloop_quit(bento->loop_ptr, 0);
 }
 }
+
+// Because GCC < v5 does not support proper static constexpr I guess... :/
+#ifdef __GNUC__
+#if __GNUC__ < 5
+constexpr PASampleSpec PulseAudioSource::default_spec;
+#endif
+#endif
 
 std::string PulseAudioSource::get_default_source_name() {
 

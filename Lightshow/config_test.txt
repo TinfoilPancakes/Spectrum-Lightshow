@@ -11,10 +11,10 @@ b_smoothing: false
 # - Ignore values below floor percentage
 f_floor: 0.0
 
-f_low_cutoff: 2.5
+f_low_cutoff: 3.0
 f_mid_cutoff: 14.0
 f_high_cutoff: 70.0
 
-f_low_mult: 0.00000001
-f_mid_mult: 0.00000001
-f_high_mult: 0.00000001
+f_low_mult: 0.00000003
+f_mid_mult: 0.00000003
+f_high_mult: 0.00000003

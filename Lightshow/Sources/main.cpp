@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/01 11:50:59 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/06/09 17:55:20 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/06/09 21:21:42 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,6 +122,9 @@ int main(int argc, char const* argv[]) {
 			std::cout << "\nAborting Read...\n" << std::flush;
 		}
 	}
+	redPWM.stop();
+	greenPWM.stop();
+	bluePWM.stop();
 	std::cout << "\nExiting..." << std::endl;
 	return 0;
 }
