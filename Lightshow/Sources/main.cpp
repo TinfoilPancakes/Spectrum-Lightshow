@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/01 11:50:59 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/06/09 21:21:42 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/06/09 22:13:26 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ int main(int argc, char const* argv[]) {
 	auto spec = Lightshow::PulseAudioSource::default_spec;
 	// Buffer Initialization
 	Lightshow::PCMStereoSample input_buffer[buffer_size];
+	size_t sizeof_ibuff = buffer_size * sizeof(Lightshow::PCMStereoSample);
 	// Create FFTransformer
 	Lightshow::FFTransformer transformer(1, buffer_size);
 	// Setup Buffer Filler;
@@ -71,8 +72,8 @@ int main(int argc, char const* argv[]) {
 	greenPWM.init();
 	// Read loop...
 	while (!exit_signal) {
-		std::memset(input_buffer, 0, sizeof(input_buffer));
-		if (source.read_into(input_buffer, sizeof(input_buffer))) {
+		std::memset(input_buffer, 0, sizeof_ibuff);
+		if (source.read_into(input_buffer, sizeof_ibuff)) {
 			// Fill FFT Buffer
 			transformer.fill_input_buffer(0, input_buffer, fill_func);
 			// Run the FFT
