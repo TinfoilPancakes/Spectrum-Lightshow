@@ -6,13 +6,14 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2016/05/21 13:12:39 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/05/26 16:59:12 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/08/02 19:52:11 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SOFTPWMCONTROL_HPP
 #define SOFTPWMCONTROL_HPP
 
+#include <atomic>
 #include <chrono>
 #include <cmath>
 #include <mutex>
@@ -21,85 +22,83 @@
 #include "GPIOInterface.hpp"
 
 class SoftPWMControl {
+	using Nanos = std::chrono::nanoseconds;
+
 protected:
-	std::mutex  lock;
-	std::thread pinControlThread;
+	std::thread		 pin_control_thread;
+	std::atomic_bool to_continue;
 
-	GPIOInterface* pin = nullptr;
+	GPIOInterface& pin;
+	// Defaults to 8ms period time.
+	std::atomic<Nanos> period;
+	// Defaults to fully off. Values range from 0.0 - 1.0
+	std::atomic<float> duty_cycle;
 
-	std::chrono::duration<unsigned long long, std::nano> period =
-		std::chrono::milliseconds(8); // Defaults to 8ms period time.
-	bool  toContinue = true;
-	float dutyCycle  = 0; // Defaults to fully off. ranges from 0.0 - 1.0
+	static void execute(SoftPWMControl* controller) {
+		while (controller->to_continue) {
+			float duty_cycle = controller->duty_cycle.load();
+			Nanos period	 = controller->period.load();
 
-	static void Execute(SoftPWMControl* controller, std::mutex* m) {
-		bool shouldContinue = controller->toContinue;
-		while (shouldContinue) {
-			m->lock();
-			controller->pin->setPinValue(short(
-				GPIO_PIN_ON *
-				(controller->dutyCycle !=
-				 0))); // The ceil function is to keep full off at 0% duty.
-			m->unlock();
-			std::this_thread::sleep_for(controller->period *
-										controller->dutyCycle);
-			m->lock();
-			controller->pin->setPinValue(GPIO_PIN_OFF);
-			m->unlock();
-			std::this_thread::sleep_for(
-				controller->period -
-				(controller->period * controller->dutyCycle));
-			m->lock();
-			shouldContinue = controller->toContinue;
-			m->unlock();
+			if (controller->duty_cycle != 0)
+				controller->pin.set_pin_value(GPIO_ON);
+
+			std::this_thread::sleep_for(period * duty_cycle);
+
+			controller->pin.set_pin_value(GPIO_OFF);
+
+			std::this_thread::sleep_for(period - (period * duty_cycle));
 		}
 	}
 
-	void launchThread() {
-		this->pinControlThread =
-			std::thread(SoftPWMControl::Execute, this, &this->lock);
+	void launch_thread() {
+		if (this->to_continue)
+			std::cerr << "Warning: Thread Already Started..." << std::endl;
+		this->to_continue		 = true;
+		this->pin_control_thread = std::thread(SoftPWMControl::execute, this);
 	}
 
-	void joinThread() {
-		this->lock.lock();
-		this->toContinue = false;
-		this->lock.unlock();
-		this->pinControlThread.join();
+	void join_thread() {
+		this->to_continue = false;
+		this->pin_control_thread.join();
 	}
 
 public:
-	SoftPWMControl(GPIOInterface* pin) { this->pin = pin; }
+	SoftPWMControl(GPIOInterface& pin) : pin(pin) {
+		this->period	  = std::chrono::milliseconds(8);
+		this->to_continue = false;
+		this->duty_cycle  = 0;
+	}
 
-	SoftPWMControl(GPIOInterface* pin, const float& dutyCycle)
+	SoftPWMControl(GPIOInterface& pin, const float duty_cycle)
 		: SoftPWMControl(pin) {
-		this->dutyCycle = dutyCycle;
+		this->duty_cycle = duty_cycle;
 	}
 
-	SoftPWMControl(
-		GPIOInterface* pin,
-		const float&   dutyCycle,
-		const std::chrono::duration<unsigned long long, std::nano>& period)
-		: SoftPWMControl(pin, dutyCycle) {
+	SoftPWMControl(GPIOInterface&				  pin,
+				   const float					  duty_cycle,
+				   const std::chrono::nanoseconds period)
+		: SoftPWMControl(pin, duty_cycle) {
 		this->period = period;
 	}
 
-	void init() { this->launchThread(); }
-
-	void stop() { this->joinThread(); }
-
-	void setDutyCycle(const float& dutyCycle) {
-		this->lock.lock();
-		this->dutyCycle = dutyCycle;
-		this->lock.unlock();
+	~SoftPWMControl() {
+		if (this->to_continue)
+			this->join_thread();
 	}
 
-	void setPeriodLength(const std::chrono::nanoseconds& period) {
-		this->lock.lock();
+	void start() { this->launch_thread(); }
+
+	void stop() { this->join_thread(); }
+
+	void set_duty_cycle(const float& duty_cycle) {
+		this->duty_cycle = duty_cycle;
+	}
+
+	void set_period_length(const std::chrono::nanoseconds& period) {
 		this->period = period;
-		this->lock.unlock();
 	}
 
-	float getDutyCycle() { return this->dutyCycle; }
+	float get_duty_cycle() { return this->duty_cycle; }
 };
 
 #endif // SOFTPWMCONTROL_HPP

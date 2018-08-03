@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/01 11:50:59 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/06/09 22:26:27 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/07/30 13:17:24 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,12 +64,9 @@ int main(int argc, char const* argv[]) {
 	SoftPWMControl redPWM(&redLights);
 	SoftPWMControl greenPWM(&greenLights);
 	// Initialize PWM.
-	bluePWM.setDutyCycle(0);
-	redPWM.setDutyCycle(0);
-	greenPWM.setDutyCycle(0);
-	bluePWM.init();
-	redPWM.init();
-	greenPWM.init();
+	bluePWM.start();
+	redPWM.start();
+	greenPWM.start();
 	// Read loop...
 	while (!exit_signal) {
 		std::memset(input_buffer, 0, sizeof_ibuff);
