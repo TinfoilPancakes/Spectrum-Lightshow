@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2017/09/15 22:43:45 by prp              2E 54 65 63 68          */
-/*   Updated: 2017/09/25 19:06:34 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/08/20 21:07:19 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ void handle_interrupt(int signal) {
 }
 
 typedef struct {
-	bool   is_stereo = false;
+	bool   is_stereo		= false;
 	size_t fftw_output_size = 0;
 } t_external_frame;
 
@@ -63,21 +63,21 @@ int main(int argc, char const* argv[]) {
 		signal(SIGINT, &handle_interrupt);
 
 		t_external_frame frame;
-		auto             data = shared_area.get_data_ptr();
+		auto			 data = shared_area.get_data_ptr();
 
 		/*  Frequency to index.
-		    200hz 3
-		    300hz 5
-		    400hz 7
-		    600hz 10
-		    700hz 12
-		    800hz 13
-		    1200hz 19
-		    2000hz 34
-		    2500hz 42
+			200hz 3
+			300hz 5
+			400hz 7
+			600hz 10
+			700hz 12
+			800hz 13
+			1200hz 19
+			2000hz 34
+			2500hz 42
 
-		    736 / 15
-		    736 / 74
+			736 / 15
+			736 / 74
 		 */
 
 		uint index_cuttofs[2] = {15, 74};
@@ -85,7 +85,8 @@ int main(int argc, char const* argv[]) {
 		double left_values[3]{0};
 		double right_values[3]{0};
 
-		std::cout << "Starting Lights... data_ptr = " << (void*)data << std::endl;
+		std::cout << "Starting Lights... data_ptr = " << (void*)data
+				  << std::endl;
 		while (g_to_continue) {
 			auto start = std::chrono::system_clock::now();
 
@@ -94,14 +95,14 @@ int main(int argc, char const* argv[]) {
 			frame = *(t_external_frame*)data;
 
 			memcpy(fftw_left,
-			       data + sizeof(t_external_frame),
-			       sizeof(double) * 2 * frame.fftw_output_size);
+				   data + sizeof(t_external_frame),
+				   sizeof(double) * 2 * frame.fftw_output_size);
 
 			if (frame.is_stereo)
 				memcpy(fftw_right,
-				       data + sizeof(t_external_frame) +
-				       sizeof(double) * 2 * frame.fftw_output_size,
-				       sizeof(double) * 2 * frame.fftw_output_size);
+					   data + sizeof(t_external_frame) +
+						   sizeof(double) * 2 * frame.fftw_output_size,
+					   sizeof(double) * 2 * frame.fftw_output_size);
 
 			shared_area.unlock();
 
@@ -112,7 +113,7 @@ int main(int argc, char const* argv[]) {
 
 			left_values[0] = 0;
 			for (; i < index_cuttofs[0]; ++i) {
-				auto real = fftw_left[i * 2];
+				auto real	  = fftw_left[i * 2];
 				auto imaginary = fftw_left[i * 2 + 1];
 				auto magnitude = sqrt(real * real + imaginary * imaginary);
 				left_values[0] += magnitude;
@@ -120,7 +121,7 @@ int main(int argc, char const* argv[]) {
 
 			left_values[1] = 0;
 			for (; i < index_cuttofs[1]; ++i) {
-				auto real = fftw_left[i * 2];
+				auto real	  = fftw_left[i * 2];
 				auto imaginary = fftw_left[i * 2 + 1];
 				auto magnitude = sqrt(real * real + imaginary * imaginary);
 				left_values[1] += magnitude;
@@ -128,17 +129,17 @@ int main(int argc, char const* argv[]) {
 
 			left_values[2] = 0;
 			for (; i < frame.fftw_output_size; ++i) {
-				auto real = fftw_left[i * 2];
+				auto real	  = fftw_left[i * 2];
 				auto imaginary = fftw_left[i * 2 + 1];
 				auto magnitude = sqrt(real * real + imaginary * imaginary);
 				left_values[2] += magnitude;
 			}
 
 			if (frame.is_stereo) {
-				i = 0;
+				i				= 0;
 				right_values[0] = 0;
 				for (; i < index_cuttofs[0]; ++i) {
-					auto real = fftw_right[i * 2];
+					auto real	  = fftw_right[i * 2];
 					auto imaginary = fftw_right[i * 2 + 1];
 					auto magnitude = sqrt(real * real + imaginary * imaginary);
 					right_values[0] += magnitude;
@@ -146,7 +147,7 @@ int main(int argc, char const* argv[]) {
 
 				right_values[1] = 0;
 				for (; i < index_cuttofs[1]; ++i) {
-					auto real = fftw_right[i * 2];
+					auto real	  = fftw_right[i * 2];
 					auto imaginary = fftw_right[i * 2 + 1];
 					auto magnitude = sqrt(real * real + imaginary * imaginary);
 					right_values[1] += magnitude;
@@ -154,7 +155,7 @@ int main(int argc, char const* argv[]) {
 
 				right_values[2] = 0;
 				for (; i < frame.fftw_output_size; ++i) {
-					auto real = fftw_right[i * 2];
+					auto real	  = fftw_right[i * 2];
 					auto imaginary = fftw_right[i * 2 + 1];
 					auto magnitude = sqrt(real * real + imaginary * imaginary);
 					right_values[2] += magnitude;
@@ -165,9 +166,9 @@ int main(int argc, char const* argv[]) {
 			float b = (left_values[2] / 1000000) / 70;
 			// normalize_volumes(r, g, b);
 			std::cout << "Size: " << frame.fftw_output_size
-			          << ", Stereo: " << frame.is_stereo << ' ';
+					  << ", Stereo: " << frame.is_stereo << ' ';
 			std::cout << std::setw(15) << r << ' ' << std::setw(15) << g << ' '
-			          << std::setw(15) << b << '\r' << std::flush;
+					  << std::setw(15) << b << '\r' << std::flush;
 
 			redPWM.setDutyCycle(r);
 			greenPWM.setDutyCycle(g);
@@ -176,7 +177,7 @@ int main(int argc, char const* argv[]) {
 			auto duration = std::chrono::system_clock::now() - start;
 			if (duration < std::chrono::milliseconds(34))
 				std::this_thread::sleep_for(std::chrono::milliseconds(34) -
-				                            duration);
+											duration);
 		}
 		std::cout << "Loop Stopped" << std::endl;
 		redPWM.stop();

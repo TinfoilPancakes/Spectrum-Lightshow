@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/01 11:50:59 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/07/30 13:17:24 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/08/20 21:37:35 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include "Configuration.hpp"
 #include "FFTransformer.hpp"
 #include "PulseAudioSource.hpp"
+#include "Socket.hpp"
 #include "SoftPWMControl.hpp"
 
 bool exit_signal = false;
@@ -31,6 +32,14 @@ void interrupt_signal(int signal_code) {
 int main(int argc, char const* argv[]) {
 	// Parse Configs.
 	Lightshow::Configuration config;
+	Lightshow::Socket		 socket_thing(2533);
+	socket_thing.set_on_recieve(
+		[](Lightshow::SocketAddress addr, size_t len, uint8_t* msg) {
+			(void)addr;
+			std::cout << "Recieved message! Length: " << len << "\n";
+			printf("%s\n", (char*)msg);
+		});
+	socket_thing.listen<1024>();
 	if (argc > 1)
 		config = Lightshow::Configuration(argv[1]);
 	// Setup Signal Handlers.
@@ -60,9 +69,9 @@ int main(int argc, char const* argv[]) {
 	GPIOInterface redLights("22", GPIO_DIR_OUT);
 	GPIOInterface greenLights("27", GPIO_DIR_OUT);
 	// Setup PWM interface.
-	SoftPWMControl bluePWM(&blueLights);
-	SoftPWMControl redPWM(&redLights);
-	SoftPWMControl greenPWM(&greenLights);
+	SoftPWMControl bluePWM(blueLights);
+	SoftPWMControl redPWM(redLights);
+	SoftPWMControl greenPWM(greenLights);
 	// Initialize PWM.
 	bluePWM.start();
 	redPWM.start();
@@ -116,9 +125,9 @@ int main(int argc, char const* argv[]) {
 					  << (lsum > 1.0 ? 1.0 : lsum) << ", m = " << std::setw(8)
 					  << (msum > 1.0 ? 1.0 : msum) << ", h = " << std::setw(8)
 					  << (hsum > 1.0 ? 1.0 : hsum) << '\r' << std::flush;
-			redPWM.setDutyCycle((lsum > 1.0 ? 1.0 : lsum));
-			greenPWM.setDutyCycle((msum > 1.0 ? 1.0 : msum));
-			bluePWM.setDutyCycle((hsum > 1.0 ? 1.0 : hsum));
+			redPWM.set_duty_cycle((lsum > 1.0 ? 1.0 : lsum));
+			greenPWM.set_duty_cycle((msum > 1.0 ? 1.0 : msum));
+			bluePWM.set_duty_cycle((hsum > 1.0 ? 1.0 : hsum));
 		} else {
 			std::cout << "\nAborting Read...\n" << std::flush;
 		}
