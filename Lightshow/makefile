@@ -8,7 +8,7 @@ NAME		:=	lightshow
 
 CC			:=	g++
 C_FLAGS		:=	-Wall -O3 -Wextra
-CXX_FLAGS 	:=	-Wall -O3 -Wextra -std=c++14 -ffast-math
+CXX_FLAGS 	:=	-Wall -O3 -Wextra -std=c++14 -ffast-math -DTF_DEBUG_ENABLE
 LNK_FLAGS	:=	-Wall -O3 -Wextra -std=c++14 -L. -ffast-math
 LNK_LIBS	:=	pthread fftw3 pulse-simple pulse m
 

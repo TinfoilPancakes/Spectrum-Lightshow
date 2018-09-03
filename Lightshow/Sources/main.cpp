@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/01 11:50:59 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/08/20 21:37:35 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/08/31 20:37:17 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,8 @@ int main(int argc, char const* argv[]) {
 			std::cout << "Recieved message! Length: " << len << "\n";
 			printf("%s\n", (char*)msg);
 		});
-	socket_thing.listen<1024>();
+	// Begin listening for udp messages with passed buffer size.
+	socket_thing.listen(1024);
 	if (argc > 1)
 		config = Lightshow::Configuration(argv[1]);
 	// Setup Signal Handlers.
