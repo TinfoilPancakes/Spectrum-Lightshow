@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/01 04:38:07 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/06/09 22:19:35 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/04 09:25:44 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@
 #include <pulse/simple.h>
 
 /* stdlib Headers. */
-#include <iostream>
 #include <string>
 
 namespace Lightshow {
@@ -63,6 +62,6 @@ public:
 	/* Method to read audio data of N bytes into a buffer. */
 	bool read_into(void* buffer, size_t buffer_size);
 };
-}
+} // namespace Lightshow
 
 #endif

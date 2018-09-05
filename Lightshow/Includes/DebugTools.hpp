@@ -6,15 +6,17 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/06/17 12:12:42 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/02 17:15:05 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/05 07:40:18 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef DD_DEBUG_TOOLS_HPP
-#define DD_DEBUG_TOOLS_HPP
+#ifndef TF_DEBUG_TOOLS_HPP
+#define TF_DEBUG_TOOLS_HPP
 
 #include <iostream>
 #include <sstream>
+
+#include "TerminalColors.hpp"
 
 // Uncomment to enable debug messages.
 // #define DEBUG_ENABLE
@@ -76,6 +78,31 @@ template <typename... Ts> void print_warning_line(const Ts&... items) {
 
 template <typename... Ts> void print_warning_list(const Ts&... items) {
 	stream_all(std::cerr, "\n", "\033[0;33m", items..., "\033[0m");
+}
+
+template <typename... Ts> void print_debug(const Ts&... items) {
+	stream_all(std::cout,
+			   "",
+			   TF::Terminal::Color::fg_black_bright(),
+			   items...,
+			   TF::Terminal::Color::reset_all());
+}
+
+template <typename... Ts> void print_debug_line(const Ts&... items) {
+	stream_all(std::cout,
+			   "",
+			   TF::Terminal::Color::fg_black_bright(),
+			   items...,
+			   TF::Terminal::Color::reset_all(),
+			   "\n");
+}
+
+template <typename... Ts> void print_debug_list(const Ts&... items) {
+	stream_all(std::cout,
+			   "\n",
+			   TF::Terminal::Color::fg_black_bright(),
+			   items...,
+			   TF::Terminal::Color::reset_all());
 }
 
 } // namespace Debug

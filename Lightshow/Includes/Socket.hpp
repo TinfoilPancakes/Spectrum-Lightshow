@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/08/03 00:42:51 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/02 17:15:37 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/05 09:59:22 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,34 +14,22 @@
 #define SOCKET_HPP
 
 #include <atomic>
-#include <cstdint>
-#include <cstring>
 #include <functional>
-#include <iostream>
 #include <thread>
-#include <vector>
 
 #include <netinet/in.h>
 #include <netinet/ip.h>
 
-#include <sys/signalfd.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-
-#include <poll.h>
-#include <signal.h>
-#include <unistd.h>
-
-#include "DebugTools.hpp"
 #include "SocketAddress.hpp"
 
-namespace Lightshow {
-
-using t_sockaddr	= struct sockaddr;
-using t_sockaddr_in = struct sockaddr_in;
-using t_timeval		= struct timeval;
+namespace TF {
+namespace Network {
 
 class Socket {
+
+	using t_sockaddr	= struct sockaddr;
+	using t_sockaddr_in = struct sockaddr_in;
+	using t_timeval		= struct timeval;
 
 	using t_recv_handler = std::function<void(SocketAddress, size_t, uint8_t*)>;
 
@@ -73,6 +61,7 @@ public:
 
 	void set_on_recieve(const t_recv_handler& handler);
 };
-} // namespace Lightshow
+} // namespace Network
+} // namespace TF
 
 #endif

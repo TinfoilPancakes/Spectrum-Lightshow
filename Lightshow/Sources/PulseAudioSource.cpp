@@ -6,13 +6,16 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/01 04:38:15 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/06/09 22:20:00 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/05 12:30:26 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "PulseAudioSource.hpp"
 
+#include "DebugTools.hpp"
+
 using namespace Lightshow;
+using namespace TF::Debug;
 
 namespace {
 
@@ -60,7 +63,7 @@ void pa_state_change_callback(pa_context* context_ptr, void* userdata) {
 	else if (state == PA_CONTEXT_TERMINATED)
 		pa_mainloop_quit(bento->loop_ptr, 0);
 }
-}
+} // namespace
 
 // Because GCC < v5 does not support proper static constexpr I guess... :/
 PASampleSpec PulseAudioSource::default_spec = {.format   = PA_SAMPLE_S16NE,
@@ -93,8 +96,12 @@ std::string PulseAudioSource::get_default_source_name() {
 	int loop_return = 0;
 	int loop_result = pa_mainloop_run(mainloop_ptr, &loop_return);
 	if (loop_result < 0) {
-		std::cerr << "PulseAudio Error [get_default_source_name]: "
-				  << pa_strerror(loop_result) << std::endl;
+		print_error_line("ERR -> [PulseAudioSource::get_default_source_name]: "
+						 "pa_mainloop_run(...) failed.\n",
+						 "> errno #",
+						 loop_result,
+						 ": ",
+						 pa_strerror(loop_result));
 	}
 
 	// Add ".monitor" to the device name because I have no idea... :(
@@ -120,17 +127,22 @@ PulseAudioSource::PulseAudioSource(
 									&this->error_code);
 
 	if (this->pulse_ptr == nullptr || this->error_code != 0) {
-		std::cerr << "PulseAudio Error [pa_simple_new]: " << this->error_code
-				  << ";\n"
-				  << pa_strerror(this->error_code) << "\n";
+		print_error_line("ERR -> [PulseAudioSource::PulseAudioSource]: "
+						 "pa_simple_new(...) failed.\n",
+						 "> errno #",
+						 this->error_code,
+						 ": ",
+						 pa_strerror(this->error_code));
 		return;
 	}
 
 	// Debugging stuff...
 	auto latency = pa_simple_get_latency(this->pulse_ptr, &this->error_code);
 
-	std::cout << "PulseAudioSource Started. [pa_simple_get_latency]: "
-			  << latency << std::endl;
+	print_debug_line("DBG -> [PulseAudioSource::PulseAudioSource]: Source "
+					 "started.\n",
+					 "[pa_simple_get_latency]: ",
+					 latency);
 }
 
 PulseAudioSource::~PulseAudioSource() {
@@ -140,19 +152,23 @@ PulseAudioSource::~PulseAudioSource() {
 
 bool PulseAudioSource::read_into(void* buffer, size_t buffer_size) {
 	if (this->pulse_ptr == nullptr) {
-		std::cerr << "Error: Attempted read of invalid PulseAudio "
-					 "source.\n";
+		print_error_line("ERR -> [PulseAudioSource::read_into]: Attempted read "
+						 "of invalid source.");
 		return false;
 	}
 
 	int32_t read_error = 0;
-	int		result =
+
+	int result =
 		pa_simple_read(this->pulse_ptr, buffer, buffer_size, &read_error);
 
 	if (result < 0) {
-		std::cerr << "PulseAudio Error [pa_simple_read]: " << read_error
-				  << ";\n"
-				  << pa_strerror(read_error) << "\n";
+		print_error_line(
+			"ERR -> [PulseAudioSource::read_into]: pa_simple_read failed.\n",
+			"> errno #",
+			read_error,
+			": ",
+			pa_strerror(read_error));
 		return false;
 	}
 

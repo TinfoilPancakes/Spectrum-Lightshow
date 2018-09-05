@@ -6,21 +6,36 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/01 09:24:53 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/02 15:00:29 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/05 11:45:05 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Socket.hpp"
+#include "DebugTools.hpp"
 
-using namespace Lightshow;
+#include <vector>
+
+#include <sys/signalfd.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+
+#include <poll.h>
+#include <signal.h>
+#include <unistd.h>
+
+using namespace TF::Network;
+using namespace TF::Debug;
 
 Socket::Socket() {
 	this->socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
 
 	if (this->socket_fd < 0) {
 		int last_err = errno;
-		std::cerr << "Error opening socket: " << strerror(last_err)
-				  << std::endl;
+		print_error_line("ERR -> [Socket::Socket]: Failed opening socket.\n",
+						 "> errno #",
+						 last_err,
+						 ": ",
+						 strerror(last_err));
 	}
 
 	this->thread_continue = false;
@@ -62,8 +77,13 @@ void Socket::listen_method(Socket* socket, size_t buffer_size) {
 		int event_count = poll(poll_args, 2, -1);
 
 		if (event_count < 0) {
-			std::cout
-				<< "poll(...) returned error: skipping loop iteration...\n";
+			int last_err = errno;
+			print_warning_line("WRN -> [Socket::listen_method]: poll(...) "
+							   "returned non-fatal error.\n",
+							   "> errno #",
+							   last_err,
+							   ": ",
+							   strerror(last_err));
 			continue;
 		}
 
@@ -82,7 +102,8 @@ void Socket::listen_method(Socket* socket, size_t buffer_size) {
 			if (socket->on_recieve != nullptr)
 				socket->on_recieve(address, bytes_read, buffer);
 			else
-				std::cout << "DBG: No handler\n";
+				print_warning_line("WRN -> [Socket::listen_method]: on_recieve "
+								   "handler not set.");
 		}
 	}
 	close(socket->signal_fd);
@@ -102,24 +123,35 @@ void Socket::listen(size_t buffer_size) {
 
 	if (b_result < 0) {
 		int last_err = errno;
-		std::cerr << "Error binding socket to address: "
-				  << "Message: " << strerror(last_err) << std::endl;
+		print_error_line("ERR -> [Socket::listen]: Call to bind(...) failed.\n",
+						 "> errno #",
+						 last_err,
+						 ": ",
+						 strerror(last_err));
 		return;
 	}
 
+	// Setup file descriptor to allow poll to catch signals.
 	sigset_t signal_mask;
 	sigemptyset(&signal_mask);
 	sigaddset(&signal_mask, SIGUSR1);
+	// Block default handling of signal for whole process.
 	sigprocmask(SIG_BLOCK, &signal_mask, nullptr);
 
 	this->signal_fd = signalfd(-1, &signal_mask, 0);
 
 	if (this->signal_fd <= 0) {
-		std::cerr << "Error creating signalfd\n";
+		int last_err = errno;
+		print_error_line(
+			"ERR -> [Socket::listen]: Creation of signalfd(...) failed.\n",
+			"> errno #",
+			last_err,
+			": ",
+			strerror(last_err));
 		return;
 	}
 
-	std::cout << "DBG: Starting Socket Thread Listener..." << std::endl;
+	print_debug_line("DBG -> [Socket::listen]: Starting listener thread.");
 	this->thread_continue = true;
 	this->listener_thread =
 		std::thread(Socket::listen_method, this, buffer_size);
@@ -130,10 +162,16 @@ void Socket::stop() {
 		return;
 
 	this->thread_continue = false;
-	std::cout << "DBG: Stopping socket thread..." << std::endl;
+	print_debug_line("DBG -> [Socket::stop]: Signalling listener thread.");
+	// Signal process with kill(...) instead of raise(...) - On Linux
+	// raise(...)seems to only signal thread, whereas kill(..) will signal
+	// the entire process and all threads in it.
 	kill(getpid(), SIGUSR1);
+	// Note: similar behavior might be observed with std::raise from <csignal>
+	// header, but I have not yet tested it.
 	this->listener_thread.join();
-	std::cout << "DBG: Done, exiting stop method.\n";
+
+	print_debug_line("DBG -> [Socket::stop]: Done, exiting method.");
 }
 
 bool Socket::send_to(SocketAddress  address,
@@ -150,8 +188,11 @@ bool Socket::send_to(SocketAddress  address,
 
 	if (sent < 0) {
 		int last_error = errno;
-		std::cerr << "Error in call to sendto(...): " << strerror(last_error)
-				  << std::endl;
+		print_error_line("ERR -> [send_to]: Failed to send.\n",
+						 "> errno #",
+						 last_error,
+						 ": ",
+						 strerror(last_error));
 		return false;
 	}
 	return true;

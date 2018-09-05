@@ -6,13 +6,14 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/01 11:50:59 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/08/31 20:37:17 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/05 12:35:27 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <csignal>
 #include <cstring>
 #include <iomanip>
+#include <iostream>
 
 #include <fftw3.h>
 
@@ -21,6 +22,9 @@
 #include "PulseAudioSource.hpp"
 #include "Socket.hpp"
 #include "SoftPWMControl.hpp"
+
+using namespace Lightshow;
+using namespace TF::Network;
 
 bool exit_signal = false;
 
@@ -31,10 +35,10 @@ void interrupt_signal(int signal_code) {
 
 int main(int argc, char const* argv[]) {
 	// Parse Configs.
-	Lightshow::Configuration config;
-	Lightshow::Socket		 socket_thing(2533);
+	Configuration config;
+	Socket		  socket_thing(2533);
 	socket_thing.set_on_recieve(
-		[](Lightshow::SocketAddress addr, size_t len, uint8_t* msg) {
+		[](SocketAddress addr, size_t len, uint8_t* msg) {
 			(void)addr;
 			std::cout << "Recieved message! Length: " << len << "\n";
 			printf("%s\n", (char*)msg);
@@ -42,29 +46,28 @@ int main(int argc, char const* argv[]) {
 	// Begin listening for udp messages with passed buffer size.
 	socket_thing.listen(1024);
 	if (argc > 1)
-		config = Lightshow::Configuration(argv[1]);
+		config = Configuration(argv[1]);
 	// Setup Signal Handlers.
 	std::signal(SIGINT, interrupt_signal);
 	// Calculate Buffer size.
 	size_t buffer_size = config.get_sample_freq() / config.get_framerate();
 	// Default Sound Spec Instance.
-	auto spec = Lightshow::PulseAudioSource::default_spec;
+	auto spec = PulseAudioSource::default_spec;
 	// Buffer Initialization
-	Lightshow::PCMStereoSample input_buffer[buffer_size];
-	size_t sizeof_ibuff = buffer_size * sizeof(Lightshow::PCMStereoSample);
+	PCMStereoSample input_buffer[buffer_size];
+	size_t			sizeof_ibuff = buffer_size * sizeof(PCMStereoSample);
 	// Create FFTransformer
-	Lightshow::FFTransformer transformer(1, buffer_size);
+	FFTransformer transformer(1, buffer_size);
 	// Setup Buffer Filler;
 	auto fill_func = [](void* input_buffer, size_t index) -> double {
-		auto buffer = (Lightshow::PCMStereoSample*)input_buffer;
+		auto buffer = (PCMStereoSample*)input_buffer;
 		return buffer[index].left + buffer[index].right;
 	};
 	// Create Source...
-	Lightshow::PulseAudioSource source(
-		argv[0],
-		"recording",
-		&spec,
-		Lightshow::PulseAudioSource::get_default_source_name());
+	PulseAudioSource source(argv[0],
+							"recording",
+							&spec,
+							PulseAudioSource::get_default_source_name());
 	// Setup GPIO
 	GPIOInterface blueLights("17", GPIO_DIR_OUT);
 	GPIOInterface redLights("22", GPIO_DIR_OUT);
