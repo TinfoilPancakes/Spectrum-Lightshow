@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/05 07:41:31 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/05 11:16:42 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/09 08:41:10 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ void SoftPWMControl::execute(SoftPWMControl* controller) {
 	while (controller->to_continue) {
 
 		float duty_cycle = controller->duty_cycle.load();
-		Nanos period	 = controller->period.load();
+		Nanos period     = controller->period.load();
 
 		if (controller->duty_cycle != 0)
 			controller->pin.set_pin_value(GPIO_ON);
@@ -37,8 +37,8 @@ void SoftPWMControl::execute(SoftPWMControl* controller) {
 void SoftPWMControl::launch_thread() {
 	if (this->to_continue)
 		print_warning_line(
-			"WRN -> [SoftPWMControl::launch_thread]: Thread already started.");
-	this->to_continue		 = true;
+		    "WRN -> [SoftPWMControl::launch_thread]: Thread already started.");
+	this->to_continue        = true;
 	this->pin_control_thread = std::thread(SoftPWMControl::execute, this);
 }
 
@@ -48,20 +48,20 @@ void SoftPWMControl::join_thread() {
 }
 
 SoftPWMControl::SoftPWMControl(GPIOInterface& pin) : pin(pin) {
-	this->period	  = std::chrono::milliseconds(8);
+	this->period      = std::chrono::milliseconds(8);
 	this->to_continue = false;
 	this->duty_cycle  = 0;
 }
 
 SoftPWMControl::SoftPWMControl(GPIOInterface& pin, const float duty_cycle)
-	: SoftPWMControl(pin) {
+    : SoftPWMControl(pin) {
 	this->duty_cycle = duty_cycle;
 }
 
 SoftPWMControl::SoftPWMControl(GPIOInterface& pin,
-							   const float	duty_cycle,
-							   const Nanos	period)
-	: SoftPWMControl(pin, duty_cycle) {
+                               const float    duty_cycle,
+                               const Nanos    period)
+    : SoftPWMControl(pin, duty_cycle) {
 	this->period = period;
 }
 

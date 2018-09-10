@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/06/17 12:12:42 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/05 07:40:18 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/09 08:37:08 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,13 +25,13 @@ namespace TF {
 namespace Debug {
 
 template <typename... Ts>
-void stream_all(std::ostream&	  out,
-				const std::string& delim,
-				const Ts&... items) {
+void stream_all(std::ostream&      out,
+                const std::string& delim,
+                const Ts&... items) {
 #ifdef TF_DEBUG_ENABLE
 	std::stringstream ss;
 	(void)std::initializer_list<uint8_t>{
-		((out << items << delim), static_cast<uint8_t>(0u))...};
+	    ((out << items << delim), static_cast<uint8_t>(0u))...};
 	out << ss.str();
 #else
 	(void)out;
@@ -82,27 +82,27 @@ template <typename... Ts> void print_warning_list(const Ts&... items) {
 
 template <typename... Ts> void print_debug(const Ts&... items) {
 	stream_all(std::cout,
-			   "",
-			   TF::Terminal::Color::fg_black_bright(),
-			   items...,
-			   TF::Terminal::Color::reset_all());
+	           "",
+	           TF::Terminal::Color::fg_black_bright(),
+	           items...,
+	           TF::Terminal::Color::reset_all());
 }
 
 template <typename... Ts> void print_debug_line(const Ts&... items) {
 	stream_all(std::cout,
-			   "",
-			   TF::Terminal::Color::fg_black_bright(),
-			   items...,
-			   TF::Terminal::Color::reset_all(),
-			   "\n");
+	           "",
+	           TF::Terminal::Color::fg_black_bright(),
+	           items...,
+	           TF::Terminal::Color::reset_all(),
+	           "\n");
 }
 
 template <typename... Ts> void print_debug_list(const Ts&... items) {
 	stream_all(std::cout,
-			   "\n",
-			   TF::Terminal::Color::fg_black_bright(),
-			   items...,
-			   TF::Terminal::Color::reset_all());
+	           "\n",
+	           TF::Terminal::Color::fg_black_bright(),
+	           items...,
+	           TF::Terminal::Color::reset_all());
 }
 
 } // namespace Debug

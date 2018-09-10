@@ -11,28 +11,26 @@
 #include "Domain/VisTypes.h"
 #include <cstdint>
 
-namespace vis
-{
+namespace vis {
 
-class AudioSource
-{
-  public:
-    explicit AudioSource();
+class AudioSource {
+public:
+	explicit AudioSource();
 
-    AudioSource(const AudioSource &other) = delete;
+	AudioSource(const AudioSource& other) = delete;
 
-    AudioSource(const AudioSource &&other) = delete;
+	AudioSource(const AudioSource&& other) = delete;
 
-    AudioSource &operator=(const AudioSource &v) = delete;
+	AudioSource& operator=(const AudioSource& v) = delete;
 
-    AudioSource &operator=(AudioSource &&v) = delete;
+	AudioSource& operator=(AudioSource&& v) = delete;
 
-    virtual ~AudioSource();
+	virtual ~AudioSource();
 
-    /**
-     * Reads "buffer_size" frames of the audio stream into "buffer"
-     */
-    virtual bool read(pcm_stereo_sample *buffer, uint32_t buffer_size) = 0;
+	/**
+	 * Reads "buffer_size" frames of the audio stream into "buffer"
+	 */
+	virtual bool read(pcm_stereo_sample* buffer, uint32_t buffer_size) = 0;
 };
 } // namespace vis
 

@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/05 10:01:30 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/05 11:16:21 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/09 08:39:21 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ GPIOInterface::GPIOInterface(const std::string& pin_id, int8_t direction) {
 }
 
 GPIOInterface::GPIOInterface(const std::string& pin_id)
-	: GPIOInterface(pin_id, GPIO_DIR_IN) {
+    : GPIOInterface(pin_id, GPIO_DIR_IN) {
 	// Just add default value for GPIO direction to in.
 }
 
@@ -46,12 +46,12 @@ bool GPIOInterface::enable() {
 	std::ofstream export_stream(path.c_str());
 
 	print_debug_line("DBG -> [GPIOInterface::enable]: Enabling pin #",
-					 this->pin_id);
+	                 this->pin_id);
 
 	if (!export_stream.is_open()) {
 		print_error_line(
-			"ERR -> [GPIOInterface::enable]: Failed to enable pin #",
-			this->pin_id);
+		    "ERR -> [GPIOInterface::enable]: Failed to enable pin #",
+		    this->pin_id);
 		return false;
 	}
 
@@ -66,12 +66,12 @@ bool GPIOInterface::disable() {
 	std::ofstream unexport_stream(path.c_str());
 
 	print_debug_line("DBG -> [GPIOInterface::disable]: Disabling pin #",
-					 this->pin_id);
+	                 this->pin_id);
 
 	if (!unexport_stream.is_open()) {
 		print_error_line(
-			"ERR -> [GPIOInterface::disable]: Failed to disable pin #",
-			this->pin_id);
+		    "ERR -> [GPIOInterface::disable]: Failed to disable pin #",
+		    this->pin_id);
 		return false;
 	}
 
@@ -84,8 +84,8 @@ bool GPIOInterface::disable() {
 bool GPIOInterface::destroy_io_stream() {
 
 	print_debug_line("DBG -> [GPIOInterface::destroy_io_stream]: ",
-					 "Closing I/O streams for pin #",
-					 this->pin_id);
+	                 "Closing I/O streams for pin #",
+	                 this->pin_id);
 
 	if (this->pin_io_stream) {
 		this->pin_io_stream->close();
@@ -100,16 +100,16 @@ bool GPIOInterface::init_io_stream() {
 	std::string path = GPIO_SYSTEM_DIR "gpio" + this->pin_id + "/value";
 
 	print_debug_line("DBG -> [GPIOInterface::init_io_stream]: ",
-					 "Initializing I/O streams for pin #",
-					 this->pin_id);
+	                 "Initializing I/O streams for pin #",
+	                 this->pin_id);
 
 	this->pin_io_stream =
-		new std::fstream(path.c_str(), std::ios::out | std::ios::in);
+	    new std::fstream(path.c_str(), std::ios::out | std::ios::in);
 
 	if (!this->pin_io_stream || !this->pin_io_stream->is_open()) {
 		print_error_line("ERR -> [GPIOInterface::init_io_stream]: ",
-						 "Failed to initialize I/O streams for pin #",
-						 this->pin_id);
+		                 "Failed to initialize I/O streams for pin #",
+		                 this->pin_id);
 		return false;
 	}
 	return true;
@@ -120,13 +120,13 @@ bool GPIOInterface::set_direction(int8_t direction) {
 	std::ofstream direction_stream(path.c_str());
 
 	print_debug_line("DBG -> [GPIOInterface::set_direction]: ",
-					 "Setting direction for pin #",
-					 this->pin_id);
+	                 "Setting direction for pin #",
+	                 this->pin_id);
 
 	if (!direction_stream.is_open()) {
 		print_error_line("ERR -> [GPIOInterface::set_direction]: ",
-						 "Failed to set direction for pin #",
-						 this->pin_id);
+		                 "Failed to set direction for pin #",
+		                 this->pin_id);
 		return false;
 	}
 

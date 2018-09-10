@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2016/05/21 13:12:39 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/05 12:56:25 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/09 08:38:25 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class SoftPWMControl {
 	using Nanos = std::chrono::nanoseconds;
 
 protected:
-	std::thread		 pin_control_thread;
+	std::thread      pin_control_thread;
 	std::atomic_bool to_continue;
 
 	GPIOInterface& pin;
@@ -46,8 +46,8 @@ public:
 	SoftPWMControl(GPIOInterface& pin, const float duty_cycle);
 
 	SoftPWMControl(GPIOInterface& pin,
-				   const float	duty_cycle,
-				   const Nanos	period);
+	               const float    duty_cycle,
+	               const Nanos    period);
 
 	~SoftPWMControl();
 

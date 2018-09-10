@@ -38,6 +38,4 @@ vis::Settings::Settings(std::string config_path)
       m_spectrum_left_margin{VisConstants::k_default_spectrum_left_margin},
       m_is_spectrum_reversed{VisConstants::k_default_spectrum_reversed},
       m_rotation_interval{VisConstants::k_default_visualizer_rotation_interval},
-      m_config_path{std::move(config_path)}
-{
-}
+      m_config_path{std::move(config_path)} {}

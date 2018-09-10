@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/11 03:09:06 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/05 12:29:02 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/09 08:36:58 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,12 @@ constexpr auto k_section = "lightshow_pi";
 
 constexpr auto k_sample_freq = "i_sample_freq";
 constexpr auto k_framerate   = "i_framerate";
+
+constexpr auto k_is_local    = "b_is_local";
+constexpr auto k_is_server   = "b_is_server";
+constexpr auto k_initial_key = "i_initial_key";
+
+constexpr auto k_port_number = "i_udp_port";
 
 constexpr auto k_smoothing = "b_smoothing";
 
@@ -43,7 +49,7 @@ class Configuration {
 
 	bool smoothing = false;
 
-	float floor		  = 0.0f;
+	float floor       = 0.0f;
 	float low_cutoff  = 25.0f;
 	float mid_cutoff  = 50.0f;
 	float high_cutoff = 75.0f;

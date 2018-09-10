@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2017/09/15 22:42:54 by prp              2E 54 65 63 68          */
-/*   Updated: 2017/09/25 19:12:52 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/09 08:41:38 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,16 +27,16 @@ namespace extension {
 template <size_t block_size> class SharedMemoryObject {
 	class SharedBlock {
 	public:
-		uint32_t		header		= 0;
-		int				status_flag = 0;
+		uint32_t        header      = 0;
+		int             status_flag = 0;
 		pthread_mutex_t lock;
-		uint8_t			data[block_size];
+		uint8_t         data[block_size];
 	};
 
 protected:
-	int			segment_id	= -1;
-	void*		segment_addr  = nullptr;
-	bool		segment_owner = false;
+	int         segment_id    = -1;
+	void*       segment_addr  = nullptr;
+	bool        segment_owner = false;
 	std::string segment_name;
 
 	SharedMemoryObject<block_size>::SharedBlock* block_ptr = nullptr;
@@ -54,7 +54,7 @@ public:
 		std::cout << "Initializing...";
 
 		this->segment_id =
-			shm_open(segment_name.c_str(), O_RDWR | O_CREAT, S_IWUSR | S_IRUSR);
+		    shm_open(segment_name.c_str(), O_RDWR | O_CREAT, S_IWUSR | S_IRUSR);
 
 		this->segment_name = segment_name;
 
@@ -67,18 +67,18 @@ public:
 
 		if (result != 0) {
 			std::cerr
-				<< "Failed to resize shared memory, may be out of memory.\n";
+			    << "Failed to resize shared memory, may be out of memory.\n";
 			return;
 		}
 
 		std::cout << "\nMapping memory...\n";
 
 		this->segment_addr = mmap(nullptr,
-								  block_size + sizeof(int),
-								  PROT_READ | PROT_WRITE,
-								  MAP_SHARED,
-								  this->segment_id,
-								  0);
+		                          block_size + sizeof(int),
+		                          PROT_READ | PROT_WRITE,
+		                          MAP_SHARED,
+		                          this->segment_id,
+		                          0);
 
 		if (this->segment_addr == (void*)-1) {
 			this->segment_addr = nullptr;
@@ -87,10 +87,10 @@ public:
 		}
 
 		this->block_ptr =
-			(SharedMemoryObject<block_size>::SharedBlock*)segment_addr;
+		    (SharedMemoryObject<block_size>::SharedBlock*)segment_addr;
 
 		if (this->block_ptr->header != HEADER_VALUE) {
-			this->block_ptr->header		 = HEADER_VALUE;
+			this->block_ptr->header      = HEADER_VALUE;
 			this->block_ptr->status_flag = 0;
 			pthread_mutexattr_t mutex_attr;
 			pthread_mutexattr_init(&mutex_attr);
@@ -143,6 +143,6 @@ public:
 		return block_ptr->data;
 	}
 };
-}
+} // namespace extension
 
 #endif

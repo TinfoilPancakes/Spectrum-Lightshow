@@ -13,54 +13,50 @@
 #include "Domain/Settings.h"
 #include "Transformer/GenericTransformer.h"
 
-namespace vis
-{
+namespace vis {
 
-class LorenzTransformer : public GenericTransformer
-{
-  public:
-    explicit LorenzTransformer(
-        const std::shared_ptr<const vis::Settings> settings,
-        const std::string &name);
+class LorenzTransformer : public GenericTransformer {
+public:
+	explicit LorenzTransformer(
+	    const std::shared_ptr<const vis::Settings> settings,
+	    const std::string&                         name);
 
-    LorenzTransformer(const LorenzTransformer &other) = delete;
+	LorenzTransformer(const LorenzTransformer& other) = delete;
 
-    LorenzTransformer(const LorenzTransformer &&other) = delete;
+	LorenzTransformer(const LorenzTransformer&& other) = delete;
 
-    LorenzTransformer &operator=(const LorenzTransformer &v) = delete;
+	LorenzTransformer& operator=(const LorenzTransformer& v) = delete;
 
-    LorenzTransformer &operator=(LorenzTransformer &&v) noexcept = delete;
+	LorenzTransformer& operator=(LorenzTransformer&& v) noexcept = delete;
 
-    ~LorenzTransformer() override;
+	~LorenzTransformer() override;
 
-    void execute_mono(pcm_stereo_sample *buffer,
-                      vis::NcursesWriter *writer) override;
-    void execute_stereo(pcm_stereo_sample *buffer,
-                        vis::NcursesWriter *writer) override;
+	void execute_mono(pcm_stereo_sample*  buffer,
+	                  vis::NcursesWriter* writer) override;
 
-    void clear_colors() override
-    {
-        m_precomputed_colors.clear();
-    }
+	void execute_stereo(pcm_stereo_sample*  buffer,
+	                    vis::NcursesWriter* writer) override;
 
-  private:
-    /** --- BEGIN MEMBER VARIABLES --- */
+	void clear_colors() override { m_precomputed_colors.clear(); }
 
-    const std::shared_ptr<const Settings> m_settings;
+private:
+	/** --- BEGIN MEMBER VARIABLES --- */
 
-    double m_rotation_count_left;
+	const std::shared_ptr<const Settings> m_settings;
 
-    double m_rotation_count_right;
+	double m_rotation_count_left;
 
-    uint64_t m_max_color_index;
+	double m_rotation_count_right;
 
-    std::vector<vis::ColorDefinition> m_precomputed_colors;
+	uint64_t m_max_color_index;
 
-    /** --- END MEMBER VARIABLES --- */
+	std::vector<vis::ColorDefinition> m_precomputed_colors;
 
-    /** --- BEGIN MEMBER FUNCTIONS --- */
+	/** --- END MEMBER VARIABLES --- */
 
-    /** --- END MEMBER FUNCTIONS --- */
+	/** --- BEGIN MEMBER FUNCTIONS --- */
+
+	/** --- END MEMBER FUNCTIONS --- */
 };
 } // namespace vis
 

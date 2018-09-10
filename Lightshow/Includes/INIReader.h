@@ -24,10 +24,10 @@ extern "C" {
 #include <stdio.h>
 
 /* Typedef for prototype of handler function. */
-typedef int (*ini_handler)(void*	   user,
-						   const char* section,
-						   const char* name,
-						   const char* value);
+typedef int (*ini_handler)(void*       user,
+                           const char* section,
+                           const char* name,
+                           const char* value);
 
 /* Typedef for prototype of fgets-style reader function. */
 typedef char* (*ini_reader)(char* str, int num, void* stream);
@@ -54,9 +54,9 @@ int ini_parse_file(FILE* file, ini_handler handler, void* user);
 /* Same as ini_parse(), but takes an ini_reader function pointer instead of
    filename. Used for implementing custom or string-based I/O. */
 int ini_parse_stream(ini_reader  reader,
-					 void*		 stream,
-					 ini_handler handler,
-					 void*		 user);
+                     void*       stream,
+                     ini_handler handler,
+                     void*       user);
 
 /* Nonzero to allow multi-line value parsing, in the style of Python's
    configparser. If allowed, ini_parse() will call the handler with the same
@@ -146,7 +146,7 @@ inline static char* find_chars_or_comment(const char* s, const char* chars) {
 #if INI_ALLOW_INLINE_COMMENTS
 	int was_space = 0;
 	while (*s && (!chars || !strchr(chars, *s)) &&
-		   !(was_space && strchr(INI_INLINE_COMMENT_PREFIXES, *s))) {
+	       !(was_space && strchr(INI_INLINE_COMMENT_PREFIXES, *s))) {
 		was_space = isspace((unsigned char)(*s));
 		s++;
 	}
@@ -167,9 +167,9 @@ inline static char* strncpy0(char* dest, const char* src, size_t size) {
 
 /* See documentation in header file. */
 inline int ini_parse_stream(ini_reader  reader,
-							void*		stream,
-							ini_handler handler,
-							void*		user) {
+                            void*       stream,
+                            ini_handler handler,
+                            void*       user) {
 /* Uses a fair bit of stack (use heap instead if you need to) */
 #if INI_USE_STACK
 	char line[INI_MAX_LINE];
@@ -200,8 +200,8 @@ inline int ini_parse_stream(ini_reader  reader,
 		start = line;
 #if INI_ALLOW_BOM
 		if (lineno == 1 && (unsigned char)start[0] == 0xEF &&
-			(unsigned char)start[1] == 0xBB &&
-			(unsigned char)start[2] == 0xBF) {
+		    (unsigned char)start[1] == 0xBB &&
+		    (unsigned char)start[2] == 0xBF) {
 			start += 3;
 		}
 #endif
@@ -343,14 +343,14 @@ public:
 	bool GetBoolean(std::string section, std::string name, bool default_value);
 
 private:
-	int _error;
+	int                                _error;
 	std::map<std::string, std::string> _values;
-	std::set<std::string> _sections;
+	std::set<std::string>              _sections;
 	static std::string MakeKey(std::string section, std::string name);
-	static int ValueHandler(void*		user,
-							const char* section,
-							const char* name,
-							const char* value);
+	static int         ValueHandler(void*       user,
+	                                const char* section,
+	                                const char* name,
+	                                const char* value);
 };
 
 #endif // __INIREADER_H__
@@ -380,9 +380,9 @@ INIReader::Get(string section, string name, string default_value) {
 
 inline long
 INIReader::GetInteger(string section, string name, long default_value) {
-	string		valstr = Get(section, name, "");
+	string      valstr = Get(section, name, "");
 	const char* value  = valstr.c_str();
-	char*		end;
+	char*       end;
 	// This parses "1234" (decimal) and also "0x4D2" (hex)
 	long n = strtol(value, &end, 0);
 	return end > value ? n : default_value;
@@ -390,10 +390,10 @@ INIReader::GetInteger(string section, string name, long default_value) {
 
 inline double
 INIReader::GetReal(string section, string name, double default_value) {
-	string		valstr = Get(section, name, "");
+	string      valstr = Get(section, name, "");
 	const char* value  = valstr.c_str();
-	char*		end;
-	double		n = strtod(value, &end);
+	char*       end;
+	double      n = strtod(value, &end);
 	return end > value ? n : default_value;
 }
 
@@ -405,7 +405,7 @@ INIReader::GetBoolean(string section, string name, bool default_value) {
 	if (valstr == "true" || valstr == "yes" || valstr == "on" || valstr == "1")
 		return true;
 	else if (valstr == "false" || valstr == "no" || valstr == "off" ||
-			 valstr == "0")
+	         valstr == "0")
 		return false;
 	else
 		return default_value;
@@ -418,12 +418,12 @@ inline string INIReader::MakeKey(string section, string name) {
 	return key;
 }
 
-inline int INIReader::ValueHandler(void*	   user,
-								   const char* section,
-								   const char* name,
-								   const char* value) {
+inline int INIReader::ValueHandler(void*       user,
+                                   const char* section,
+                                   const char* name,
+                                   const char* value) {
 	INIReader* reader = (INIReader*)user;
-	string	 key	= MakeKey(section, name);
+	string     key    = MakeKey(section, name);
 	if (reader->_values[key].size() > 0)
 		reader->_values[key] += "\n";
 	reader->_values[key] += value;

@@ -20,41 +20,34 @@
  * called.
  */
 #define VIS_LOG(log_level, message, args...)                                   \
-    {                                                                          \
-        if (vis::Logger::level() <= (log_level))                               \
-        {                                                                      \
-            vis::Logger::log(log_level, __FILE__, __LINE__, message, ##args);  \
-        }                                                                      \
-    }
+	{                                                                          \
+		if (vis::Logger::level() <= (log_level)) {                             \
+			vis::Logger::log(log_level, __FILE__, __LINE__, message, ##args);  \
+		}                                                                      \
+	}
 
-namespace vis
-{
+namespace vis {
 
-enum class LogLevel
-{
-    DEBUG,
-    INFO,
-    WARN,
-    ERROR
-};
+enum class LogLevel { DEBUG, INFO, WARN, ERROR };
 
-class Logger
-{
-  public:
-    static void log(vis::LogLevel level, const char *file, uint16_t line,
-                    const char *format, ...);
+class Logger {
+public:
+	static void log(vis::LogLevel level,
+	                const char*   file,
+	                uint16_t      line,
+	                const char*   format,
+	                ...);
 
-    constexpr static vis::LogLevel level()
-    {
+	constexpr static vis::LogLevel level() {
 #ifdef VIS_LOG_DEBUG
-        return LogLevel::DEBUG;
+		return LogLevel::DEBUG;
 #endif
-        return LogLevel::ERROR;
-    }
+		return LogLevel::ERROR;
+	}
 
-    static void initialize(std::string log_location);
+	static void initialize(std::string log_location);
 
-    static void uninitialize();
+	static void uninitialize();
 };
 } // namespace vis
 

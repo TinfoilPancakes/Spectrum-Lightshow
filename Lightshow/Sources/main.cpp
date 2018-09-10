@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/01 11:50:59 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/05 12:35:27 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/09 08:39:32 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,13 +36,13 @@ void interrupt_signal(int signal_code) {
 int main(int argc, char const* argv[]) {
 	// Parse Configs.
 	Configuration config;
-	Socket		  socket_thing(2533);
+	Socket        socket_thing(2533);
 	socket_thing.set_on_recieve(
-		[](SocketAddress addr, size_t len, uint8_t* msg) {
-			(void)addr;
-			std::cout << "Recieved message! Length: " << len << "\n";
-			printf("%s\n", (char*)msg);
-		});
+	    [](SocketAddress addr, size_t len, uint8_t* msg) {
+		    (void)addr;
+		    std::cout << "Recieved message! Length: " << len << "\n";
+		    printf("%s\n", (char*)msg);
+	    });
 	// Begin listening for udp messages with passed buffer size.
 	socket_thing.listen(1024);
 	if (argc > 1)
@@ -55,7 +55,7 @@ int main(int argc, char const* argv[]) {
 	auto spec = PulseAudioSource::default_spec;
 	// Buffer Initialization
 	PCMStereoSample input_buffer[buffer_size];
-	size_t			sizeof_ibuff = buffer_size * sizeof(PCMStereoSample);
+	size_t          sizeof_ibuff = buffer_size * sizeof(PCMStereoSample);
 	// Create FFTransformer
 	FFTransformer transformer(1, buffer_size);
 	// Setup Buffer Filler;
@@ -65,9 +65,9 @@ int main(int argc, char const* argv[]) {
 	};
 	// Create Source...
 	PulseAudioSource source(argv[0],
-							"recording",
-							&spec,
-							PulseAudioSource::get_default_source_name());
+	                        "recording",
+	                        &spec,
+	                        PulseAudioSource::get_default_source_name());
 	// Setup GPIO
 	GPIOInterface blueLights("17", GPIO_DIR_OUT);
 	GPIOInterface redLights("22", GPIO_DIR_OUT);
@@ -98,7 +98,7 @@ int main(int argc, char const* argv[]) {
 			double lsum = 0.0;
 			size_t lco  = config.get_low_cutoff() * out_count / 100;
 			while (iter < lco) {
-				double real		 = output[iter][0];
+				double real      = output[iter][0];
 				double imaginary = output[iter][1];
 				lsum += std::sqrt(real * real + imaginary * imaginary);
 				++iter;
@@ -108,7 +108,7 @@ int main(int argc, char const* argv[]) {
 			double msum = 0.0;
 			size_t mco  = config.get_mid_cutoff() * out_count / 100;
 			while (iter < mco) {
-				double real		 = output[iter][0];
+				double real      = output[iter][0];
 				double imaginary = output[iter][1];
 				msum += std::sqrt(real * real + imaginary * imaginary);
 				++iter;
@@ -118,17 +118,17 @@ int main(int argc, char const* argv[]) {
 			double hsum = 0.0;
 			size_t hco  = config.get_high_cutoff() * out_count / 100;
 			while (iter < hco) {
-				double real		 = output[iter][0];
+				double real      = output[iter][0];
 				double imaginary = output[iter][1];
 				hsum += std::sqrt(real * real + imaginary * imaginary);
 				++iter;
 			}
 			hsum *= config.get_high_mult();
 			std::cout << std::setfill(' ') << std::setprecision(3) << std::fixed
-					  << "Output: l = " << std::setw(8)
-					  << (lsum > 1.0 ? 1.0 : lsum) << ", m = " << std::setw(8)
-					  << (msum > 1.0 ? 1.0 : msum) << ", h = " << std::setw(8)
-					  << (hsum > 1.0 ? 1.0 : hsum) << '\r' << std::flush;
+			          << "Output: l = " << std::setw(8)
+			          << (lsum > 1.0 ? 1.0 : lsum) << ", m = " << std::setw(8)
+			          << (msum > 1.0 ? 1.0 : msum) << ", h = " << std::setw(8)
+			          << (hsum > 1.0 ? 1.0 : hsum) << '\r' << std::flush;
 			redPWM.set_duty_cycle((lsum > 1.0 ? 1.0 : lsum));
 			greenPWM.set_duty_cycle((msum > 1.0 ? 1.0 : msum));
 			bluePWM.set_duty_cycle((hsum > 1.0 ? 1.0 : hsum));

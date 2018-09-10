@@ -17,11 +17,9 @@
 
 #include <ncurses.h>
 
-static void test_color_settings(benchmark::State &state)
-{
-    while (state.KeepRunning())
-    {
-    }
+static void test_color_settings(benchmark::State& state) {
+	while (state.KeepRunning()) {
+	}
 }
 
 BENCHMARK(test_color_settings);

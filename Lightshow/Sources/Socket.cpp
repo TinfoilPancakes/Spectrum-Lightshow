@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/01 09:24:53 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/05 11:45:05 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/09 08:40:57 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,10 +32,10 @@ Socket::Socket() {
 	if (this->socket_fd < 0) {
 		int last_err = errno;
 		print_error_line("ERR -> [Socket::Socket]: Failed opening socket.\n",
-						 "> errno #",
-						 last_err,
-						 ": ",
-						 strerror(last_err));
+		                 "> errno #",
+		                 last_err,
+		                 ": ",
+		                 strerror(last_err));
 	}
 
 	this->thread_continue = false;
@@ -65,8 +65,8 @@ void Socket::listen_method(Socket* socket, size_t buffer_size) {
 	// Bitmask for events to listen for
 	// Number of events returned (set by poll(...))
 	struct pollfd poll_args[2] =
-		{{socket->socket_fd, POLLIN | POLLHUP | POLLERR | POLLNVAL, 0},
-		 {socket->signal_fd, POLLIN | POLLHUP | POLLERR | POLLNVAL, 0}};
+	    {{socket->socket_fd, POLLIN | POLLHUP | POLLERR | POLLNVAL, 0},
+	     {socket->signal_fd, POLLIN | POLLHUP | POLLERR | POLLNVAL, 0}};
 
 	while (socket->thread_continue) {
 
@@ -79,31 +79,31 @@ void Socket::listen_method(Socket* socket, size_t buffer_size) {
 		if (event_count < 0) {
 			int last_err = errno;
 			print_warning_line("WRN -> [Socket::listen_method]: poll(...) "
-							   "returned non-fatal error.\n",
-							   "> errno #",
-							   last_err,
-							   ": ",
-							   strerror(last_err));
+			                   "returned non-fatal error.\n",
+			                   "> errno #",
+			                   last_err,
+			                   ": ",
+			                   strerror(last_err));
 			continue;
 		}
 
 		if (poll_args[0].revents & POLLIN) {
 			ssize_t bytes_read = recvfrom(socket->socket_fd,
-										  buffer,
-										  buffer_size,
-										  0,
-										  (t_sockaddr*)&reciever,
-										  &reciever_size);
+			                              buffer,
+			                              buffer_size,
+			                              0,
+			                              (t_sockaddr*)&reciever,
+			                              &reciever_size);
 
 			SocketAddress address(reciever.sin_family,
-								  reciever.sin_port,
-								  reciever.sin_addr.s_addr);
+			                      reciever.sin_port,
+			                      reciever.sin_addr.s_addr);
 
 			if (socket->on_recieve != nullptr)
 				socket->on_recieve(address, bytes_read, buffer);
 			else
 				print_warning_line("WRN -> [Socket::listen_method]: on_recieve "
-								   "handler not set.");
+				                   "handler not set.");
 		}
 	}
 	close(socket->signal_fd);
@@ -114,20 +114,20 @@ void Socket::listen(size_t buffer_size) {
 	t_sockaddr_in address;
 	bzero(&address, sizeof(t_sockaddr_in));
 
-	address.sin_family		= AF_INET;
-	address.sin_port		= htons(this->port_number);
+	address.sin_family      = AF_INET;
+	address.sin_port        = htons(this->port_number);
 	address.sin_addr.s_addr = INADDR_ANY;
 
 	int b_result =
-		bind(this->socket_fd, (t_sockaddr*)&address, sizeof(address));
+	    bind(this->socket_fd, (t_sockaddr*)&address, sizeof(address));
 
 	if (b_result < 0) {
 		int last_err = errno;
 		print_error_line("ERR -> [Socket::listen]: Call to bind(...) failed.\n",
-						 "> errno #",
-						 last_err,
-						 ": ",
-						 strerror(last_err));
+		                 "> errno #",
+		                 last_err,
+		                 ": ",
+		                 strerror(last_err));
 		return;
 	}
 
@@ -143,18 +143,18 @@ void Socket::listen(size_t buffer_size) {
 	if (this->signal_fd <= 0) {
 		int last_err = errno;
 		print_error_line(
-			"ERR -> [Socket::listen]: Creation of signalfd(...) failed.\n",
-			"> errno #",
-			last_err,
-			": ",
-			strerror(last_err));
+		    "ERR -> [Socket::listen]: Creation of signalfd(...) failed.\n",
+		    "> errno #",
+		    last_err,
+		    ": ",
+		    strerror(last_err));
 		return;
 	}
 
 	print_debug_line("DBG -> [Socket::listen]: Starting listener thread.");
 	this->thread_continue = true;
 	this->listener_thread =
-		std::thread(Socket::listen_method, this, buffer_size);
+	    std::thread(Socket::listen_method, this, buffer_size);
 }
 
 void Socket::stop() {
@@ -175,24 +175,24 @@ void Socket::stop() {
 }
 
 bool Socket::send_to(SocketAddress  address,
-					 const uint8_t* msg_buffer,
-					 size_t			msg_length) {
+                     const uint8_t* msg_buffer,
+                     size_t         msg_length) {
 
 	auto addr_struct = address.get_struct();
-	auto sent		 = sendto(this->socket_fd,
-						  msg_buffer,
-						  msg_length,
-						  0,
-						  (t_sockaddr*)&addr_struct,
-						  sizeof(addr_struct));
+	auto sent        = sendto(this->socket_fd,
+                       msg_buffer,
+                       msg_length,
+                       0,
+                       (t_sockaddr*)&addr_struct,
+                       sizeof(addr_struct));
 
 	if (sent < 0) {
 		int last_error = errno;
 		print_error_line("ERR -> [send_to]: Failed to send.\n",
-						 "> errno #",
-						 last_error,
-						 ": ",
-						 strerror(last_error));
+		                 "> errno #",
+		                 last_error,
+		                 ": ",
+		                 strerror(last_error));
 		return false;
 	}
 	return true;

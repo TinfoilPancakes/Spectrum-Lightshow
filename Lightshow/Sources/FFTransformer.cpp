@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/01 11:14:36 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/04/14 11:37:37 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/09 08:39:06 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ FFTransformer::FFTransformer(size_t channel_count, size_t sample_count) {
 		auto input_buffer = (double*)fftw_malloc(sample_count * sizeof(double));
 
 		FFTResult* output_buffer =
-			(FFTResult*)fftw_malloc(output_sample_count * sizeof(FFTResult));
+		    (FFTResult*)fftw_malloc(output_sample_count * sizeof(FFTResult));
 
 		this->input_buffers[i]  = input_buffer;
 		this->output_buffers[i] = output_buffer;
@@ -47,9 +47,9 @@ FFTransformer::~FFTransformer() {
 }
 
 uint32_t FFTransformer::fill_input_buffer(
-	size_t channel_index,
-	void*  samples,
-	std::function<double(void*, size_t)> parse_sample) {
+    size_t                               channel_index,
+    void*                                samples,
+    std::function<double(void*, size_t)> parse_sample) {
 
 	uint32_t loud_samples = 0;
 	for (size_t i = 0; i < sample_count; ++i) {
@@ -65,9 +65,9 @@ uint32_t FFTransformer::fill_input_buffer(
 void FFTransformer::calculate_dft() {
 	for (size_t i = 0; i < this->channel_count; ++i) {
 		fftw_plan channel_plan = fftw_plan_dft_r2c_1d((int)this->sample_count,
-													  this->input_buffers[i],
-													  this->output_buffers[i],
-													  FFTW_ESTIMATE);
+		                                              this->input_buffers[i],
+		                                              this->output_buffers[i],
+		                                              FFTW_ESTIMATE);
 		fftw_execute(channel_plan);
 		fftw_destroy_plan(channel_plan);
 	}
