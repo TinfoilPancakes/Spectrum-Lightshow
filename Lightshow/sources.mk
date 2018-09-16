@@ -1,7 +1,9 @@
 CXX_FILES += FFTransformer.cpp \
 			 PulseAudioSource.cpp \
 			 Socket.cpp \
-			 Configuration.cpp \
+			 Config.cpp \
+			 Crypto.cpp \
 			 SoftPWMControl.cpp \
 			 GPIOInterface.cpp \
+			 Lightshow.cpp \
 			 main.cpp
