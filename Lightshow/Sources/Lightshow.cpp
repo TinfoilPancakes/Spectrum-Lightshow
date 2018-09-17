@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/11 13:29:03 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/17 05:09:52 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 07:46:24 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,10 @@ std::basic_string<uint8_t> Lightshow::build_remote_msg(NetworkPacket packet) {
 NetworkPacket Lightshow::extract_remote_msg(uint8_t* msg, size_t len) {
 	NetworkPacket extracted;
 	extracted.seed = UINT64_MAX;
-	if (std::strncmp((char*)msg, "WOOF", 4)) {
+
+	print_debug((char)msg[0], (char)msg[1], (char)msg[2], (char)msg[3], "\n");
+
+	if (std::memcmp(msg, "WOOF", 4)) {
 		print_warning_line("WRN -> [extract_remote_msg]: Invalid packet.");
 		return extracted;
 	}
@@ -73,11 +76,8 @@ NetworkPacket Lightshow::extract_remote_msg(uint8_t* msg, size_t len) {
 	}
 
 	if (crc != msg[len - 1]) {
-		if (std::strncmp((char*)msg, "WOOF", 4)) {
-			print_warning_line(
-			    "WRN -> [extract_remote_msg]: Invalid Packet CRC");
-			return extracted;
-		}
+		print_warning_line("WRN -> [extract_remote_msg]: Invalid Packet CRC");
+		return extracted;
 	}
 
 	float* msg_content = (float*)&msg[4];
@@ -232,11 +232,11 @@ void Lightshow::run_tx(Lightshow::Config config) {
 	// Setup UDP Socket.
 	Socket        udp_out(config.server_port);
 	SocketAddress server_addr;
-	server_addr.set_port(config.server_port);
 	if (!isdigit(config.server_addr[0])) {
 		std::cout << "Please enter target server ipv4 address: ";
 		std::cin >> config.server_addr;
 	}
+	server_addr.set_port(config.server_port);
 	server_addr.set_address(config.server_addr);
 	// Setup keystate
 	auto current_key = config.initial_key;
