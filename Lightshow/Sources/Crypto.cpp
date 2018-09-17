@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/15 10:12:47 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/16 13:17:49 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 07:56:57 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,15 +47,12 @@ uint8_t get_byte_offset(uint64_t seed) {
 		++seed_ptr;
 	}
 
-	t_byte_access extractor;
-	extractor.val = hash;
-
 	uint8_t offset = 0;
-	offset |= extractor.bits.b3;
+	offset |= (hash >> 2) & 1;
 	offset <<= 1;
-	offset |= extractor.bits.b4;
+	offset |= (hash >> 3) & 1;
 	offset <<= 1;
-	offset |= extractor.bits.b5;
+	offset |= (hash >> 4) & 1;
 	return offset;
 }
 
