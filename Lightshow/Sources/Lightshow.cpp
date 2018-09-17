@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/11 13:29:03 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/17 09:07:37 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 09:26:45 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,8 +62,6 @@ std::basic_string<uint8_t> Lightshow::build_remote_msg(NetworkPacket packet) {
 NetworkPacket Lightshow::extract_remote_msg(uint8_t* msg, size_t len) {
 	NetworkPacket extracted;
 	extracted.seed = UINT64_MAX;
-
-	print_debug((char)msg[0], (char)msg[1], (char)msg[2], (char)msg[3], "\n");
 
 	if (std::memcmp(msg, "WOOF", 4)) {
 		print_warning_line("WRN -> [extract_remote_msg]: Invalid packet.");
