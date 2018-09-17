@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/11 03:09:06 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/16 19:46:52 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 08:12:38 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ public:
 
 	std::string server_addr = "#";
 
-	uint64_t initial_key = 0x676f6f6769726c;
+	uint64_t initial_key = 0x474f4f44444f47;
 	int      server_port = 2533;
 
 	int sample_freq = 44100;
