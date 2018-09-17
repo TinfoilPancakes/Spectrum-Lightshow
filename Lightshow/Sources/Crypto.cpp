@@ -6,13 +6,16 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/15 10:12:47 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/17 07:56:57 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 08:25:16 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Crypto.hpp"
 
+#include <cstdint>
 #include <random>
+
+#include <endian.h>
 
 using namespace TF::Crypto;
 
@@ -64,7 +67,7 @@ TF::Crypto::encrypt(uint64_t seed, uint8_t* msg, size_t len) {
 
 	std::basic_string<uint8_t> encrypted;
 
-	uint64_t current_key = seed;
+	uint64_t current_key = htobe64(seed);
 
 	for (size_t i = 0; i < len; ++i) {
 		uint8_t  offset  = get_byte_offset(current_key);
@@ -85,7 +88,7 @@ std::basic_string<uint8_t>
 TF::Crypto::decrypt(uint64_t seed, uint8_t* msg, size_t len) {
 	std::basic_string<uint8_t> decrypted;
 
-	uint64_t current_key = seed;
+	uint64_t current_key = htobe64(seed);
 
 	for (size_t i = 0; i < len; i += sizeof(seed)) {
 		auto offset = get_byte_offset(current_key);

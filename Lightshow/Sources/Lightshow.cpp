@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/11 13:29:03 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/17 07:46:24 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 08:31:42 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -319,6 +319,9 @@ void Lightshow::run_rx(Lightshow::Config config) {
 	SoftPWMControl bluePWM(blueLights);
 	SoftPWMControl redPWM(redLights);
 	SoftPWMControl greenPWM(greenLights);
+	bluePWM.start();
+	redPWM.start();
+	greenPWM.start();
 	// Setup incoming data handler.
 	uint64_t current_key = config.initial_key;
 	udp_in.set_on_recieve([&](SocketAddress addr, size_t length, uint8_t* msg) {
@@ -327,7 +330,8 @@ void Lightshow::run_rx(Lightshow::Config config) {
 		auto packet =
 		    extract_remote_msg((uint8_t*)decrypted.data(), decrypted.length());
 
-		current_key = packet.seed;
+		if (packet.seed == INT64_MAX)
+			current_key = packet.seed;
 
 		redPWM.set_duty_cycle(packet.r);
 		greenPWM.set_duty_cycle(packet.g);
@@ -340,9 +344,6 @@ void Lightshow::run_rx(Lightshow::Config config) {
 		          << std::flush;
 	});
 	// Initialize PWM.
-	bluePWM.start();
-	redPWM.start();
-	greenPWM.start();
 	// Begin listening
 	udp_in.listen(config.server_port);
 	// Lock thread to wait for signal

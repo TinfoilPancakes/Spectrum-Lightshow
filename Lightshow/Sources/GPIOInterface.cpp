@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/05 10:01:30 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/09 08:39:21 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 08:36:34 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@ bool GPIOInterface::enable() {
 	}
 
 	export_stream << this->pin_id;
+	export_stream.flush();
 	export_stream.close();
 
 	return true;
@@ -76,6 +77,7 @@ bool GPIOInterface::disable() {
 	}
 
 	unexport_stream << this->pin_id;
+	unexport_stream.flush();
 	unexport_stream.close();
 
 	return true;
@@ -135,6 +137,7 @@ bool GPIOInterface::set_direction(int8_t direction) {
 	} else {
 		direction_stream << "out";
 	}
+	direction_stream.flush();
 	direction_stream.close();
 
 	return true;
