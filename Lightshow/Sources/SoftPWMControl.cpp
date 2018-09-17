@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/05 07:41:31 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/17 09:20:25 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 10:41:59 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,11 @@ using namespace Lightshow;
 using namespace TF::Debug;
 
 void SoftPWMControl::execute(SoftPWMControl* controller) {
-	print_debug_line("DBG -> [SoftPWMControl::execute]: Started pwm thread.");
+
 	while (controller->to_continue) {
 
-		float duty_cycle = controller->duty_cycle;
-		Nanos period     = controller->period;
+		float duty_cycle = controller->duty_cycle.load();
+		Nanos period     = controller->period.load();
 
 		if (controller->duty_cycle != 0)
 			controller->pin.set_pin_value(GPIO_ON);

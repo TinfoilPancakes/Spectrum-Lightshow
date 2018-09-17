@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/05 10:01:30 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/17 08:36:34 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 10:50:15 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,8 @@ bool GPIOInterface::destroy_io_stream() {
 }
 
 bool GPIOInterface::init_io_stream() {
-	std::string path = GPIO_SYSTEM_DIR "gpio" + this->pin_id + "/value";
+	std::string path = GPIO_SYSTEM_DIR "gpio";
+	path += this->pin_id + "/value";
 
 	print_debug_line("DBG -> [GPIOInterface::init_io_stream]: ",
 	                 "Initializing I/O streams for pin #",
@@ -118,7 +119,8 @@ bool GPIOInterface::init_io_stream() {
 }
 
 bool GPIOInterface::set_direction(int8_t direction) {
-	std::string   path = GPIO_SYSTEM_DIR "gpio" + this->pin_id + "/direction";
+	std::string path = GPIO_SYSTEM_DIR "gpio";
+	path += this->pin_id + "/direction";
 	std::ofstream direction_stream(path.c_str());
 
 	print_debug_line("DBG -> [GPIOInterface::set_direction]: ",
@@ -145,6 +147,8 @@ bool GPIOInterface::set_direction(int8_t direction) {
 
 int8_t GPIOInterface::get_pin_value() {
 	if (!this->pin_io_stream) {
+		print_warning_line("WRN -> [GPIOInterface::get_pin_value]: Pin I/O "
+		                   "stream not initialized.");
 		return -1;
 	}
 
@@ -158,6 +162,8 @@ int8_t GPIOInterface::get_pin_value() {
 
 bool GPIOInterface::set_pin_value(int8_t value) {
 	if (!this->pin_io_stream) {
+		print_warning_line("WRN -> [GPIOInterface::set_pin_value]: Pin I/O "
+		                   "stream not initialized.");
 		return false;
 	}
 
