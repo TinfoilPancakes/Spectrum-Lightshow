@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/11 13:29:03 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/17 09:26:45 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 10:54:57 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@
 #include <iomanip>
 #include <mutex>
 #include <random>
+
+#include <unistd.h>
 
 using namespace Lightshow;
 using namespace TF::Debug;
@@ -313,6 +315,13 @@ void Lightshow::run_rx(Lightshow::Config config) {
 	GPIOInterface blueLights("17", GPIO_DIR_OUT);
 	GPIOInterface redLights("22", GPIO_DIR_OUT);
 	GPIOInterface greenLights("27", GPIO_DIR_OUT);
+
+	redLights.set_pin_value(1);
+	greenLights.set_pin_value(1);
+	blueLights.set_pin_value(1);
+
+	sleep(2);
+
 	// Setup PWM interface.
 	SoftPWMControl bluePWM(blueLights);
 	SoftPWMControl redPWM(redLights);
