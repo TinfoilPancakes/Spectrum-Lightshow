@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/11 13:29:03 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/17 05:09:52 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 11:27:39 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ std::basic_string<uint8_t> Lightshow::build_remote_msg(NetworkPacket packet) {
 NetworkPacket Lightshow::extract_remote_msg(uint8_t* msg, size_t len) {
 	NetworkPacket extracted;
 	extracted.seed = UINT64_MAX;
-	if (std::strncmp((char*)msg, "WOOF", 4)) {
+	if (std::memcmp((char*)msg, "WOOF", 4)) {
 		print_warning_line("WRN -> [extract_remote_msg]: Invalid packet.");
 		return extracted;
 	}
@@ -73,11 +73,8 @@ NetworkPacket Lightshow::extract_remote_msg(uint8_t* msg, size_t len) {
 	}
 
 	if (crc != msg[len - 1]) {
-		if (std::strncmp((char*)msg, "WOOF", 4)) {
-			print_warning_line(
-			    "WRN -> [extract_remote_msg]: Invalid Packet CRC");
-			return extracted;
-		}
+		print_warning_line("WRN -> [extract_remote_msg]: Invalid Packet CRC");
+		return extracted;
 	}
 
 	float* msg_content = (float*)&msg[4];
@@ -138,17 +135,17 @@ void Lightshow::run_local(Lightshow::Config config) {
 		return buffer[index].left + buffer[index].right;
 	};
 	// Setup GPIO
-	GPIOInterface blueLights("17", GPIO_DIR_OUT);
-	GPIOInterface redLights("22", GPIO_DIR_OUT);
-	GPIOInterface greenLights("27", GPIO_DIR_OUT);
+	GPIOInterface blue_lights("17", GPIO_DIR_OUT);
+	GPIOInterface red_lights("22", GPIO_DIR_OUT);
+	GPIOInterface green_lights("27", GPIO_DIR_OUT);
 	// Setup PWM interface.
-	SoftPWMControl bluePWM(blueLights);
-	SoftPWMControl redPWM(redLights);
-	SoftPWMControl greenPWM(greenLights);
+	SoftPWMControl blue_pwm(blue_lights);
+	SoftPWMControl red_pwm(red_lights);
+	SoftPWMControl green_pwm(green_lights);
 	// Initialize PWM.
-	bluePWM.start();
-	redPWM.start();
-	greenPWM.start();
+	blue_pwm.start();
+	red_pwm.start();
+	green_pwm.start();
 	// Read loop...
 	while (!exit_signal) {
 		std::memset(input_buffer, 0, sizeof_ibuff);
@@ -186,16 +183,16 @@ void Lightshow::run_local(Lightshow::Config config) {
 			          << ", b (high) = " << std::setw(8) << b << '\r'
 			          << std::flush;
 
-			redPWM.set_duty_cycle(r);
-			greenPWM.set_duty_cycle(g);
-			bluePWM.set_duty_cycle(b);
+			red_pwm.set_duty_cycle(r);
+			green_pwm.set_duty_cycle(g);
+			blue_pwm.set_duty_cycle(b);
 		} else {
 			std::cout << "\nAborting Read...\n" << std::flush;
 		}
 	}
-	redPWM.stop();
-	greenPWM.stop();
-	bluePWM.stop();
+	red_pwm.stop();
+	green_pwm.stop();
+	blue_pwm.stop();
 	std::cout << "\nExiting..." << std::endl;
 } // run_local
 
@@ -270,14 +267,14 @@ void Lightshow::run_tx(Lightshow::Config config) {
 			float g = (msum > 1.0 ? 1.0 : msum);
 			float b = (hsum > 1.0 ? 1.0 : hsum);
 
-			auto packet    = create_packet(r, g, b);
-			auto b_stream  = build_remote_msg(packet);
-			auto encrypted = TF::Crypto::encrypt(current_key,
-			                                     (uint8_t*)b_stream.data(),
-			                                     b_stream.length());
+			auto packet   = create_packet(r, g, b);
+			auto b_stream = build_remote_msg(packet);
+			// auto encrypted = TF::Crypto::encrypt(current_key,
+			//                                      (uint8_t*)b_stream.data(),
+			//                                      b_stream.length());
 			udp_out.send_to(server_addr,
-			                (uint8_t*)encrypted.data(),
-			                encrypted.length());
+			                (uint8_t*)b_stream.data(),
+			                b_stream.length());
 
 			current_key = packet.seed;
 
@@ -312,26 +309,26 @@ void Lightshow::run_rx(Lightshow::Config config) {
 	std::signal(SIGINT, [](int signal) { local_shutdown(signal); });
 
 	// Setup GPIO
-	GPIOInterface blueLights("17", GPIO_DIR_OUT);
-	GPIOInterface redLights("22", GPIO_DIR_OUT);
-	GPIOInterface greenLights("27", GPIO_DIR_OUT);
+	GPIOInterface blue_lights("17", GPIO_DIR_OUT);
+	GPIOInterface red_lights("22", GPIO_DIR_OUT);
+	GPIOInterface green_lights("27", GPIO_DIR_OUT);
 	// Setup PWM interface.
-	SoftPWMControl bluePWM(blueLights);
-	SoftPWMControl redPWM(redLights);
-	SoftPWMControl greenPWM(greenLights);
+	SoftPWMControl blue_pwm(blue_lights);
+	SoftPWMControl red_pwm(red_lights);
+	SoftPWMControl green_pwm(green_lights);
 	// Setup incoming data handler.
 	uint64_t current_key = config.initial_key;
 	udp_in.set_on_recieve([&](SocketAddress addr, size_t length, uint8_t* msg) {
 		(void)addr;
-		auto decrypted = TF::Crypto::decrypt(current_key, msg, length);
-		auto packet =
-		    extract_remote_msg((uint8_t*)decrypted.data(), decrypted.length());
+		// auto decrypted = TF::Crypto::decrypt(current_key, msg, length);
+		auto packet = extract_remote_msg(msg, length);
 
-		current_key = packet.seed;
+		if (packet.seed != UINT64_MAX)
+			current_key = packet.seed;
 
-		redPWM.set_duty_cycle(packet.r);
-		greenPWM.set_duty_cycle(packet.g);
-		bluePWM.set_duty_cycle(packet.b);
+		red_pwm.set_duty_cycle(packet.r);
+		green_pwm.set_duty_cycle(packet.g);
+		blue_pwm.set_duty_cycle(packet.b);
 
 		std::cout << std::setfill(' ') << std::setprecision(3) << std::fixed
 		          << "Output: r (low) = " << std::setw(8) << packet.r
@@ -340,17 +337,17 @@ void Lightshow::run_rx(Lightshow::Config config) {
 		          << std::flush;
 	});
 	// Initialize PWM.
-	bluePWM.start();
-	redPWM.start();
-	greenPWM.start();
+	blue_pwm.start();
+	red_pwm.start();
+	green_pwm.start();
 	// Begin listening
 	udp_in.listen(config.server_port);
 	// Lock thread to wait for signal
 	main_thread_lock.lock();
 	// Cleanup
-	bluePWM.stop();
-	redPWM.stop();
-	greenPWM.stop();
+	blue_pwm.stop();
+	red_pwm.stop();
+	green_pwm.stop();
 	// Neat.
 	std::cout << "Exiting..." << std::endl;
 }

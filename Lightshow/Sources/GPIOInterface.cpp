@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/05 10:01:30 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/09 08:39:21 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 11:28:39 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,12 +140,12 @@ bool GPIOInterface::set_direction(int8_t direction) {
 	return true;
 }
 
-int8_t GPIOInterface::get_pin_value() {
+int GPIOInterface::get_pin_value() {
 	if (!this->pin_io_stream) {
 		return -1;
 	}
 
-	int8_t pinValue;
+	int pinValue;
 
 	*(this->pin_io_stream) >> pinValue;
 	this->pin_io_stream->flush();
@@ -153,7 +153,7 @@ int8_t GPIOInterface::get_pin_value() {
 	return pinValue;
 }
 
-bool GPIOInterface::set_pin_value(int8_t value) {
+bool GPIOInterface::set_pin_value(int value) {
 	if (!this->pin_io_stream) {
 		return false;
 	}

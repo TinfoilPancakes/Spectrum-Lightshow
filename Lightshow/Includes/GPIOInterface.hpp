@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2016/05/19 13:12:39 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/09 08:37:46 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 11:28:17 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,9 +49,9 @@ public:
 
 	bool set_direction(int8_t direction);
 
-	int8_t get_pin_value();
+	int get_pin_value();
 
-	bool set_pin_value(int8_t value);
+	bool set_pin_value(int value);
 };
 } // namespace Lightshow
 #endif // GPIOINTERFACE_HPP
