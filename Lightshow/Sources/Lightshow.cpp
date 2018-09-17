@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/11 13:29:03 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/17 08:31:42 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 09:07:37 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,14 +270,14 @@ void Lightshow::run_tx(Lightshow::Config config) {
 			float g = (msum > 1.0 ? 1.0 : msum);
 			float b = (hsum > 1.0 ? 1.0 : hsum);
 
-			auto packet    = create_packet(r, g, b);
-			auto b_stream  = build_remote_msg(packet);
-			auto encrypted = TF::Crypto::encrypt(current_key,
-			                                     (uint8_t*)b_stream.data(),
-			                                     b_stream.length());
+			auto packet   = create_packet(r, g, b);
+			auto b_stream = build_remote_msg(packet);
+			// auto encrypted = TF::Crypto::encrypt(current_key,
+			//                                      (uint8_t*)b_stream.data(),
+			//                                      b_stream.length());
 			udp_out.send_to(server_addr,
-			                (uint8_t*)encrypted.data(),
-			                encrypted.length());
+			                (uint8_t*)b_stream.data(),
+			                b_stream.length());
 
 			current_key = packet.seed;
 
@@ -326,10 +326,11 @@ void Lightshow::run_rx(Lightshow::Config config) {
 	uint64_t current_key = config.initial_key;
 	udp_in.set_on_recieve([&](SocketAddress addr, size_t length, uint8_t* msg) {
 		(void)addr;
-		auto decrypted = TF::Crypto::decrypt(current_key, msg, length);
-		auto packet =
-		    extract_remote_msg((uint8_t*)decrypted.data(), decrypted.length());
-
+		// auto decrypted = TF::Crypto::decrypt(current_key, msg, length);
+		// auto packet =
+		//     extract_remote_msg((uint8_t*)decrypted.data(),
+		//     decrypted.length());
+		auto packet = extract_remote_msg(msg, length);
 		if (packet.seed == INT64_MAX)
 			current_key = packet.seed;
 
