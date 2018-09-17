@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/01 09:24:53 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/17 07:32:11 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 09:15:00 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,9 +99,6 @@ void Socket::listen_method(Socket* socket, size_t buffer_size) {
 			                      reciever.sin_port,
 			                      reciever.sin_addr.s_addr);
 
-			print_debug("DBG -> [listen_method]: Received ",
-			            bytes_read,
-			            " bytes.\n");
 			if (socket->on_recieve != nullptr) {
 				socket->on_recieve(address, bytes_read, buffer);
 			} else
