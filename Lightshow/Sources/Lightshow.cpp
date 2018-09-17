@@ -6,14 +6,25 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/11 13:29:03 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/16 10:59:58 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 05:09:52 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Lightshow.hpp"
+#include "Crypto.hpp"
 #include "DebugTools.hpp"
+#include "FFTransformer.hpp"
+#include "GPIOInterface.hpp"
+#include "PulseAudioSource.hpp"
+#include "Socket.hpp"
+#include "SoftPWMControl.hpp"
 
+#include <atomic>
+#include <csignal>
 #include <cstring>
+#include <functional>
+#include <iomanip>
+#include <mutex>
 #include <random>
 
 using namespace Lightshow;
@@ -93,4 +104,253 @@ double Lightshow::sum_samples(fftw_complex* samples,
 		++start_idx;
 	}
 	return sum;
+}
+
+namespace {
+std::function<void(int)> local_shutdown;
+}
+
+void Lightshow::run_local(Lightshow::Config config) {
+	// Initialize termination condition.
+	std::atomic_bool exit_signal;
+	exit_signal = false;
+	// Setup Signal Handler
+	local_shutdown = [&exit_signal](int signal) {
+		if (signal == SIGINT)
+			exit_signal = true;
+	};
+	std::signal(SIGINT, [](int signal) { local_shutdown(signal); });
+	// Setup Sample Buffer
+	size_t buffer_size = config.sample_freq / config.framerate;
+	auto   spec        = PulseAudioSource::default_spec;
+
+	PCMStereoSample  input_buffer[buffer_size];
+	size_t           sizeof_ibuff = buffer_size * sizeof(PCMStereoSample);
+	PulseAudioSource source("lightshow",
+	                        "recording",
+	                        &spec,
+	                        PulseAudioSource::get_default_source_name());
+	// Setup FFT Processing
+	FFTransformer transformer(1, buffer_size);
+	// Setup Buffer Filler;
+	auto fill_func = [](void* input_buffer, size_t index) -> double {
+		auto buffer = (PCMStereoSample*)input_buffer;
+		return buffer[index].left + buffer[index].right;
+	};
+	// Setup GPIO
+	GPIOInterface blueLights("17", GPIO_DIR_OUT);
+	GPIOInterface redLights("22", GPIO_DIR_OUT);
+	GPIOInterface greenLights("27", GPIO_DIR_OUT);
+	// Setup PWM interface.
+	SoftPWMControl bluePWM(blueLights);
+	SoftPWMControl redPWM(redLights);
+	SoftPWMControl greenPWM(greenLights);
+	// Initialize PWM.
+	bluePWM.start();
+	redPWM.start();
+	greenPWM.start();
+	// Read loop...
+	while (!exit_signal) {
+		std::memset(input_buffer, 0, sizeof_ibuff);
+		if (source.read_into(input_buffer, sizeof_ibuff)) {
+			// Fill FFT Buffer
+			transformer.fill_input_buffer(0, input_buffer, fill_func);
+			// Run the FFT
+			transformer.calculate_dft();
+			// Get Channel outputs
+			fftw_complex* output = transformer.get_output(0);
+
+			auto out_count = transformer.get_output_count();
+
+			size_t floor = config.floor * out_count / 100;
+
+			size_t lco  = config.low_cutoff * out_count / 100;
+			double lsum = sum_samples(output, floor, lco);
+			lsum *= config.low_mult;
+
+			size_t mco  = config.mid_cutoff * out_count / 100;
+			double msum = sum_samples(output, lco, mco);
+			msum *= config.mid_mult;
+
+			size_t hco  = config.high_cutoff * out_count / 100;
+			double hsum = sum_samples(output, mco, hco);
+			hsum *= config.high_mult;
+
+			float r = (lsum > 1.0 ? 1.0 : lsum);
+			float g = (msum > 1.0 ? 1.0 : msum);
+			float b = (hsum > 1.0 ? 1.0 : hsum);
+
+			std::cout << std::setfill(' ') << std::setprecision(3) << std::fixed
+			          << "Output: r (low) = " << std::setw(8) << r
+			          << ", g (med) = " << std::setw(8) << g
+			          << ", b (high) = " << std::setw(8) << b << '\r'
+			          << std::flush;
+
+			redPWM.set_duty_cycle(r);
+			greenPWM.set_duty_cycle(g);
+			bluePWM.set_duty_cycle(b);
+		} else {
+			std::cout << "\nAborting Read...\n" << std::flush;
+		}
+	}
+	redPWM.stop();
+	greenPWM.stop();
+	bluePWM.stop();
+	std::cout << "\nExiting..." << std::endl;
+} // run_local
+
+void Lightshow::run_tx(Lightshow::Config config) {
+	using TF::Network::Socket;
+	using TF::Network::SocketAddress;
+
+	// Initialize termination condition.
+	std::atomic_bool exit_signal;
+	exit_signal = false;
+	// Setup Signal Handler
+	local_shutdown = [&exit_signal](int signal) {
+		if (signal == SIGINT)
+			exit_signal = true;
+	};
+	std::signal(SIGINT, [](int signal) { local_shutdown(signal); });
+	// Setup Sample Buffer
+	size_t buffer_size = config.sample_freq / config.framerate;
+	auto   spec        = PulseAudioSource::default_spec;
+
+	PCMStereoSample  input_buffer[buffer_size];
+	size_t           sizeof_ibuff = buffer_size * sizeof(PCMStereoSample);
+	PulseAudioSource source("lightshow",
+	                        "recording",
+	                        &spec,
+	                        PulseAudioSource::get_default_source_name());
+	// Setup FFT Processing
+	FFTransformer transformer(1, buffer_size);
+	// Setup Buffer Filler;
+	auto fill_func = [](void* input_buffer, size_t index) -> double {
+		auto buffer = (PCMStereoSample*)input_buffer;
+		return buffer[index].left + buffer[index].right;
+	};
+	// Setup UDP Socket.
+	Socket        udp_out(config.server_port);
+	SocketAddress server_addr;
+	server_addr.set_port(config.server_port);
+	if (!isdigit(config.server_addr[0])) {
+		std::cout << "Please enter target server ipv4 address: ";
+		std::cin >> config.server_addr;
+	}
+	server_addr.set_address(config.server_addr);
+	// Setup keystate
+	auto current_key = config.initial_key;
+	// Read loop...
+	while (!exit_signal) {
+		std::memset(input_buffer, 0, sizeof_ibuff);
+		if (source.read_into(input_buffer, sizeof_ibuff)) {
+			// Fill FFT Buffer
+			transformer.fill_input_buffer(0, input_buffer, fill_func);
+			// Run the FFT
+			transformer.calculate_dft();
+			// Get Channel outputs
+			fftw_complex* output = transformer.get_output(0);
+
+			auto   out_count = transformer.get_output_count();
+			size_t floor     = config.floor * out_count / 100;
+
+			size_t lco  = config.low_cutoff * out_count / 100;
+			double lsum = sum_samples(output, floor, lco);
+			lsum *= config.low_mult;
+
+			size_t mco  = config.mid_cutoff * out_count / 100;
+			double msum = sum_samples(output, lco, mco);
+			msum *= config.mid_mult;
+
+			size_t hco  = config.high_cutoff * out_count / 100;
+			double hsum = sum_samples(output, mco, hco);
+			hsum *= config.high_mult;
+
+			float r = (lsum > 1.0 ? 1.0 : lsum);
+			float g = (msum > 1.0 ? 1.0 : msum);
+			float b = (hsum > 1.0 ? 1.0 : hsum);
+
+			auto packet    = create_packet(r, g, b);
+			auto b_stream  = build_remote_msg(packet);
+			auto encrypted = TF::Crypto::encrypt(current_key,
+			                                     (uint8_t*)b_stream.data(),
+			                                     b_stream.length());
+			udp_out.send_to(server_addr,
+			                (uint8_t*)encrypted.data(),
+			                encrypted.length());
+
+			current_key = packet.seed;
+
+			std::cout << std::setfill(' ') << std::setprecision(3) << std::fixed
+			          << "Output: r (low) = " << std::setw(8) << r
+			          << ", g (med) = " << std::setw(8) << g
+			          << ", b (high) = " << std::setw(8) << b << '\r'
+			          << std::flush;
+		} else {
+			std::cout << "\nAborting Read...\n" << std::flush;
+		}
+	}
+	std::cout << "\nLast Key: " << std::hex << current_key << "\n";
+	std::cout << "Exiting..." << std::endl;
+} // run_tx
+
+void Lightshow::run_rx(Lightshow::Config config) {
+	using TF::Network::Socket;
+	using TF::Network::SocketAddress;
+
+	std::mutex main_thread_lock;
+	main_thread_lock.lock();
+
+	Socket udp_in(config.server_port);
+
+	local_shutdown = [&main_thread_lock](int signal) {
+		if (signal == SIGINT) {
+			main_thread_lock.unlock();
+		}
+	};
+
+	std::signal(SIGINT, [](int signal) { local_shutdown(signal); });
+
+	// Setup GPIO
+	GPIOInterface blueLights("17", GPIO_DIR_OUT);
+	GPIOInterface redLights("22", GPIO_DIR_OUT);
+	GPIOInterface greenLights("27", GPIO_DIR_OUT);
+	// Setup PWM interface.
+	SoftPWMControl bluePWM(blueLights);
+	SoftPWMControl redPWM(redLights);
+	SoftPWMControl greenPWM(greenLights);
+	// Setup incoming data handler.
+	uint64_t current_key = config.initial_key;
+	udp_in.set_on_recieve([&](SocketAddress addr, size_t length, uint8_t* msg) {
+		(void)addr;
+		auto decrypted = TF::Crypto::decrypt(current_key, msg, length);
+		auto packet =
+		    extract_remote_msg((uint8_t*)decrypted.data(), decrypted.length());
+
+		current_key = packet.seed;
+
+		redPWM.set_duty_cycle(packet.r);
+		greenPWM.set_duty_cycle(packet.g);
+		bluePWM.set_duty_cycle(packet.b);
+
+		std::cout << std::setfill(' ') << std::setprecision(3) << std::fixed
+		          << "Output: r (low) = " << std::setw(8) << packet.r
+		          << ", g (med) = " << std::setw(8) << packet.g
+		          << ", b (high) = " << std::setw(8) << packet.b << '\r'
+		          << std::flush;
+	});
+	// Initialize PWM.
+	bluePWM.start();
+	redPWM.start();
+	greenPWM.start();
+	// Begin listening
+	udp_in.listen(config.server_port);
+	// Lock thread to wait for signal
+	main_thread_lock.lock();
+	// Cleanup
+	bluePWM.stop();
+	redPWM.stop();
+	greenPWM.stop();
+	// Neat.
+	std::cout << "Exiting..." << std::endl;
 }

@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/15 10:12:47 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/16 02:27:24 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/16 13:17:49 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,8 @@ uint8_t get_byte_offset(uint64_t seed) {
 	return offset;
 }
 
-std::basic_string<uint8_t> encrypt(uint64_t seed, uint8_t* msg, size_t len) {
+std::basic_string<uint8_t>
+TF::Crypto::encrypt(uint64_t seed, uint8_t* msg, size_t len) {
 	std::random_device                      rd;
 	std::mt19937_64                         mt_generator(rd());
 	std::uniform_int_distribution<uint64_t> dist(0, UINT64_MAX);
@@ -83,7 +84,8 @@ std::basic_string<uint8_t> encrypt(uint64_t seed, uint8_t* msg, size_t len) {
 	return encrypted;
 }
 
-std::basic_string<uint8_t> decrypt(uint64_t seed, uint8_t* msg, size_t len) {
+std::basic_string<uint8_t>
+TF::Crypto::decrypt(uint64_t seed, uint8_t* msg, size_t len) {
 	std::basic_string<uint8_t> decrypted;
 
 	uint64_t current_key = seed;

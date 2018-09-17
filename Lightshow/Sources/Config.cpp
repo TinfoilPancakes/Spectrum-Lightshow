@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/04 09:39:06 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/12 10:21:20 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/16 19:47:30 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ constexpr auto k_is_local  = "b_is_local";
 constexpr auto k_is_server = "b_is_server";
 
 constexpr auto k_initial_key = "i_initial_key";
+constexpr auto k_server_addr = "s_server_addr";
 constexpr auto k_server_port = "i_server_port";
 
 constexpr auto k_sample_freq = "i_sample_freq";
@@ -57,6 +58,8 @@ bool Config::load_config_file(const std::string& file) {
 
 	initial_key = reader.GetInteger(k_section, k_initial_key, initial_key);
 	server_port = reader.GetInteger(k_section, k_server_port, server_port);
+
+	server_addr = reader.Get(k_section, k_server_addr, server_addr);
 
 	sample_freq = reader.GetInteger(k_section, k_sample_freq, sample_freq);
 	framerate   = reader.GetInteger(k_section, k_framerate, framerate);

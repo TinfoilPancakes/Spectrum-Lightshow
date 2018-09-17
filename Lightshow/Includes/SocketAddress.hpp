@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/08/11 08:55:13 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/09 08:38:18 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 04:35:09 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef SOCKET_ADDRESS_HPP
@@ -14,7 +14,9 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <string>
 
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <sys/socket.h>
@@ -56,6 +58,10 @@ public:
 
 	inline void set_address(uint32_t address) {
 		this->address_struct.sin_addr.s_addr = htonl(address);
+	}
+
+	inline void set_address(const std::string& str) {
+		inet_pton(AF_INET, str.c_str(), &address_struct.sin_addr);
 	}
 
 	inline t_sockaddr_in get_struct() { return this->address_struct; }
