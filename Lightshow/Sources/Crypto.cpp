@@ -6,56 +6,34 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/15 10:12:47 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/16 13:17:49 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/22 09:34:07 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Crypto.hpp"
 
+#include <bitset>
 #include <random>
 
 using namespace TF::Crypto;
 
-struct s_bitset {
-	unsigned b0 : 1;
-	unsigned b1 : 1;
-	unsigned b2 : 1;
-	unsigned b3 : 1;
-
-	unsigned b4 : 1;
-	unsigned b5 : 1;
-	unsigned b6 : 1;
-	unsigned b7 : 1;
-};
-
-using t_bitset = struct s_bitset;
-
-union u_byte_access {
-	uint8_t  val;
-	t_bitset bits;
-};
-
-using t_byte_access = union u_byte_access;
-
 uint8_t get_byte_offset(uint64_t seed) {
 	uint8_t* seed_ptr = (uint8_t*)&seed;
-	uint8_t* end_ptr  = seed_ptr + sizeof(seed);
 	uint8_t  hash     = 0;
 
-	while (seed_ptr < end_ptr) {
-		hash ^= *seed_ptr;
-		++seed_ptr;
+	for (size_t i = 0; i < sizeof(seed); ++i) {
+		hash ^= seed_ptr[i];
 	}
 
-	t_byte_access extractor;
-	extractor.val = hash;
+	std::bitset<8> hash_bitset(hash);
+	uint8_t        offset = 0;
 
-	uint8_t offset = 0;
-	offset |= extractor.bits.b3;
+	offset |= hash_bitset[3];
 	offset <<= 1;
-	offset |= extractor.bits.b4;
+	offset |= hash_bitset[5];
 	offset <<= 1;
-	offset |= extractor.bits.b5;
+	offset |= hash_bitset[7];
+
 	return offset;
 }
 
@@ -73,7 +51,14 @@ TF::Crypto::encrypt(uint64_t seed, uint8_t* msg, size_t len) {
 		uint8_t  offset  = get_byte_offset(current_key);
 		uint64_t padding = dist(mt_generator);
 
-		((uint8_t*)&padding)[offset] = msg[i];
+		uint64_t extended_msg = msg[i];
+		uint64_t mask         = 0xff;
+
+		extended_msg <<= (offset * 8);
+		mask <<= offset * 8;
+		mask = ~mask;
+		padding &= mask;
+		padding |= extended_msg;
 
 		uint64_t e_char = padding ^ current_key;
 		encrypted.append((uint8_t*)&e_char, sizeof(e_char));
@@ -93,10 +78,10 @@ TF::Crypto::decrypt(uint64_t seed, uint8_t* msg, size_t len) {
 	for (size_t i = 0; i < len; i += sizeof(seed)) {
 		auto offset = get_byte_offset(current_key);
 
-		uint64_t e_char = (*(uint64_t*)&msg[i]);
+		uint64_t e_char = (*(uint64_t*)(msg + i));
 		uint64_t padded = e_char ^ current_key;
 
-		uint8_t original = ((uint8_t*)&padded)[offset];
+		uint8_t original = (padded >> (offset * 8)) & 0xFF;
 		decrypted.push_back(original);
 
 		current_key = (current_key * original) ^ padded;
