@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/15 10:12:47 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/22 09:34:07 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/22 09:45:27 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ TF::Crypto::encrypt(uint64_t seed, uint8_t* msg, size_t len) {
 		padding |= extended_msg;
 
 		uint64_t e_char = padding ^ current_key;
+		e_char          = htobe64(e_char);
 		encrypted.append((uint8_t*)&e_char, sizeof(e_char));
 
 		current_key = (current_key * msg[i]) ^ padding;
@@ -78,7 +79,7 @@ TF::Crypto::decrypt(uint64_t seed, uint8_t* msg, size_t len) {
 	for (size_t i = 0; i < len; i += sizeof(seed)) {
 		auto offset = get_byte_offset(current_key);
 
-		uint64_t e_char = (*(uint64_t*)(msg + i));
+		uint64_t e_char = be64toh(*(uint64_t*)(msg + i));
 		uint64_t padded = e_char ^ current_key;
 
 		uint8_t original = (padded >> (offset * 8)) & 0xFF;
