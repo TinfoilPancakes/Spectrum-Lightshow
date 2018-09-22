@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/15 10:12:47 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/22 09:45:27 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/22 11:16:14 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 using namespace TF::Crypto;
 
 uint8_t get_byte_offset(uint64_t seed) {
+	seed              = htobe64(seed);
 	uint8_t* seed_ptr = (uint8_t*)&seed;
 	uint8_t  hash     = 0;
 
