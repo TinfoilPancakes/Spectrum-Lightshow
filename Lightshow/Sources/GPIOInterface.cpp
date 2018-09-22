@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/05 10:01:30 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/17 11:28:39 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/17 11:35:51 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,6 +154,9 @@ int GPIOInterface::get_pin_value() {
 }
 
 bool GPIOInterface::set_pin_value(int value) {
+	// IMPORTANT this value needs to be an integer - for some reason it will not
+	// recognize less than 4 bytes on a raspberry pi.
+
 	if (!this->pin_io_stream) {
 		return false;
 	}
