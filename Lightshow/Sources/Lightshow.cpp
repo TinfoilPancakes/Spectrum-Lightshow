@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/11 13:29:03 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/22 09:37:11 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/23 01:44:39 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@ std::basic_string<uint8_t> Lightshow::build_remote_msg(NetworkPacket packet) {
 		crc ^= byte;
 	}
 	raw_msg.push_back(crc);
+
 	return raw_msg;
 }
 

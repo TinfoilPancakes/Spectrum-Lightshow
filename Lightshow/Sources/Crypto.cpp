@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/15 10:12:47 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/22 11:16:14 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/23 01:44:11 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 using namespace TF::Crypto;
 
 uint8_t get_byte_offset(uint64_t seed) {
-	seed              = htobe64(seed);
+
 	uint8_t* seed_ptr = (uint8_t*)&seed;
 	uint8_t  hash     = 0;
 
@@ -55,14 +55,16 @@ TF::Crypto::encrypt(uint64_t seed, uint8_t* msg, size_t len) {
 		uint64_t extended_msg = msg[i];
 		uint64_t mask         = 0xff;
 
-		extended_msg <<= (offset * 8);
+		extended_msg <<= offset * 8;
 		mask <<= offset * 8;
 		mask = ~mask;
 		padding &= mask;
 		padding |= extended_msg;
 
+		printf("CKey: 0x%016llx\n", current_key);
+
 		uint64_t e_char = padding ^ current_key;
-		e_char          = htobe64(e_char);
+
 		encrypted.append((uint8_t*)&e_char, sizeof(e_char));
 
 		current_key = (current_key * msg[i]) ^ padding;
@@ -80,7 +82,8 @@ TF::Crypto::decrypt(uint64_t seed, uint8_t* msg, size_t len) {
 	for (size_t i = 0; i < len; i += sizeof(seed)) {
 		auto offset = get_byte_offset(current_key);
 
-		uint64_t e_char = be64toh(*(uint64_t*)(msg + i));
+		uint64_t e_char = *((uint64_t*)(&msg[i]));
+
 		uint64_t padded = e_char ^ current_key;
 
 		uint8_t original = (padded >> (offset * 8)) & 0xFF;

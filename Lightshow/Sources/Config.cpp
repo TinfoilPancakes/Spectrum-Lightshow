@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/04 09:39:06 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/16 19:47:30 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/23 01:43:55 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,9 @@ bool Config::load_config_file(const std::string& file) {
 	is_local  = reader.GetBoolean(k_section, k_is_local, is_local);
 	is_server = reader.GetBoolean(k_section, k_is_server, is_server);
 
-	initial_key = reader.GetInteger(k_section, k_initial_key, initial_key);
+	auto temp_key = reader.Get(k_section, k_initial_key, "0x00676f6f6769726c");
+	initial_key   = std::stoull(temp_key.c_str(), nullptr, 0);
+
 	server_port = reader.GetInteger(k_section, k_server_port, server_port);
 
 	server_addr = reader.Get(k_section, k_server_addr, server_addr);
