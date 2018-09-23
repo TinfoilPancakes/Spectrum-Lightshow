@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/15 10:12:47 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/23 01:44:11 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/23 01:52:19 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,8 +60,6 @@ TF::Crypto::encrypt(uint64_t seed, uint8_t* msg, size_t len) {
 		mask = ~mask;
 		padding &= mask;
 		padding |= extended_msg;
-
-		printf("CKey: 0x%016llx\n", current_key);
 
 		uint64_t e_char = padding ^ current_key;
 
