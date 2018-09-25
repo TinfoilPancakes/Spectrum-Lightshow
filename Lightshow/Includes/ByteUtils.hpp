@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/23 11:30:26 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/24 15:32:54 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/24 18:22:07 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 namespace TF {
 namespace ByteUtils {
 
-bool __is_big_endian() {
+inline bool _is_big_endian() {
 	union {
 		uint32_t val;
 		uint8_t  bytes[sizeof(uint32_t)];
@@ -35,19 +35,19 @@ template <typename T> T bswp(T value) {
 		rval[i] = val_ptr[sizeof(T) - 1 - i];
 	}
 
-	return *(T*)rval;
+	return *((T*)rval);
 }
 
 template <typename T> T to_big_endian(T value) {
-	if (__is_big_endian())
+	if (_is_big_endian())
 		return value;
-	bswp(value);
+	return bswp(value);
 }
 
 template <typename T> T from_big_endian(T value) {
-	if (__is_big_endian())
+	if (_is_big_endian())
 		return value;
-	bswp(value);
+	return bswp(value);
 }
 
 } // namespace ByteUtils
