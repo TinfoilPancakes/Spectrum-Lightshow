@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/23 11:30:26 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/24 18:22:07 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/24 18:27:52 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,14 +28,16 @@ inline bool _is_big_endian() {
 }
 
 template <typename T> T bswp(T value) {
-	uint8_t  rval[sizeof(T)];
+	T rval;
+
+	uint8_t* rv_ptr  = (uint8_t*)&rval;
 	uint8_t* val_ptr = (uint8_t*)&value;
 
 	for (uint64_t i = 0; i < sizeof(T); ++i) {
-		rval[i] = val_ptr[sizeof(T) - 1 - i];
+		rv_ptr[i] = val_ptr[sizeof(T) - 1 - i];
 	}
 
-	return *((T*)rval);
+	return rval;
 }
 
 template <typename T> T to_big_endian(T value) {
