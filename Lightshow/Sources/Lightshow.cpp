@@ -6,11 +6,12 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/11 13:29:03 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/23 01:44:39 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/24 18:07:00 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Lightshow.hpp"
+#include "ByteUtils.hpp"
 #include "Crypto.hpp"
 #include "DebugTools.hpp"
 #include "FFTransformer.hpp"
@@ -29,6 +30,8 @@
 
 using namespace Lightshow;
 using namespace TF::Debug;
+using TF::ByteUtils::from_big_endian;
+using TF::ByteUtils::to_big_endian;
 
 NetworkPacket Lightshow::create_packet(float r, float g, float b) {
 	std::random_device                      rd;
@@ -47,10 +50,17 @@ NetworkPacket Lightshow::create_packet(float r, float g, float b) {
 std::basic_string<uint8_t> Lightshow::build_remote_msg(NetworkPacket packet) {
 	std::basic_string<uint8_t> raw_msg;
 	raw_msg.append((uint8_t*)"WOOF", 4);
+
+	packet.r    = to_big_endian(packet.r);
+	packet.g    = to_big_endian(packet.g);
+	packet.b    = to_big_endian(packet.b);
+	packet.seed = to_big_endian(packet.seed);
+
 	raw_msg.append((uint8_t*)&packet.r, sizeof(packet.r));
 	raw_msg.append((uint8_t*)&packet.g, sizeof(packet.g));
 	raw_msg.append((uint8_t*)&packet.b, sizeof(packet.b));
 	raw_msg.append((uint8_t*)&packet.seed, sizeof(packet.seed));
+
 	uint8_t crc = 0;
 	for (auto byte : raw_msg) {
 		crc ^= byte;
@@ -80,13 +90,13 @@ NetworkPacket Lightshow::extract_remote_msg(uint8_t* msg, size_t len) {
 
 	float* msg_content = (float*)&msg[4];
 
-	extracted.r = msg_content[0];
-	extracted.g = msg_content[1];
-	extracted.b = msg_content[2];
+	extracted.r = from_big_endian(msg_content[0]);
+	extracted.g = from_big_endian(msg_content[1]);
+	extracted.b = from_big_endian(msg_content[2]);
 
 	uint64_t* msg_seed = (uint64_t*)&msg_content[3];
 
-	extracted.seed = *msg_seed;
+	extracted.seed = from_big_endian(*msg_seed);
 
 	return extracted;
 }
@@ -109,15 +119,18 @@ std::function<void(int)> local_shutdown;
 }
 
 void Lightshow::run_local(Lightshow::Config config) {
+
 	// Initialize termination condition.
 	std::atomic_bool exit_signal;
 	exit_signal = false;
+
 	// Setup Signal Handler
 	local_shutdown = [&exit_signal](int signal) {
 		if (signal == SIGINT)
 			exit_signal = true;
 	};
 	std::signal(SIGINT, [](int signal) { local_shutdown(signal); });
+
 	// Setup Sample Buffer
 	size_t buffer_size = config.sample_freq / config.framerate;
 	auto   spec        = PulseAudioSource::default_spec;
@@ -128,17 +141,21 @@ void Lightshow::run_local(Lightshow::Config config) {
 	                        "recording",
 	                        &spec,
 	                        PulseAudioSource::get_default_source_name());
+
 	// Setup FFT Processing
 	FFTransformer transformer(1, buffer_size);
+
 	// Setup Buffer Filler;
 	auto fill_func = [](void* input_buffer, size_t index) -> double {
 		auto buffer = (PCMStereoSample*)input_buffer;
 		return buffer[index].left + buffer[index].right;
 	};
+
 	// Setup GPIO
 	GPIOInterface blue_lights("17", GPIO_DIR_OUT);
 	GPIOInterface red_lights("22", GPIO_DIR_OUT);
 	GPIOInterface green_lights("27", GPIO_DIR_OUT);
+
 	// Setup PWM interface.
 	SoftPWMControl blue_pwm(blue_lights);
 	SoftPWMControl red_pwm(red_lights);
@@ -148,6 +165,14 @@ void Lightshow::run_local(Lightshow::Config config) {
 	blue_pwm.start();
 	red_pwm.start();
 	green_pwm.start();
+
+	// Calculate Cutoffs.
+	auto out_count = transformer.get_output_count();
+
+	size_t floor = config.floor * out_count / 100;
+	size_t lco   = config.low_cutoff * out_count / 100;
+	size_t mco   = config.mid_cutoff * out_count / 100;
+	size_t hco   = config.high_cutoff * out_count / 100;
 
 	// Read loop...
 	while (!exit_signal) {
@@ -163,20 +188,12 @@ void Lightshow::run_local(Lightshow::Config config) {
 			// Get Channel outputs
 			fftw_complex* output = transformer.get_output(0);
 
-			auto out_count = transformer.get_output_count();
-
-			size_t floor = config.floor * out_count / 100;
-
-			size_t lco  = config.low_cutoff * out_count / 100;
 			double lsum = sum_samples(output, floor, lco);
-			lsum *= config.low_mult;
-
-			size_t mco  = config.mid_cutoff * out_count / 100;
 			double msum = sum_samples(output, lco, mco);
-			msum *= config.mid_mult;
-
-			size_t hco  = config.high_cutoff * out_count / 100;
 			double hsum = sum_samples(output, mco, hco);
+
+			lsum *= config.low_mult;
+			msum *= config.mid_mult;
 			hsum *= config.high_mult;
 
 			float r = (lsum > 1.0 ? 1.0 : lsum);
@@ -193,13 +210,15 @@ void Lightshow::run_local(Lightshow::Config config) {
 			green_pwm.set_duty_cycle(g);
 			blue_pwm.set_duty_cycle(b);
 		} else {
-			std::cout << "\nAborting Read...\n" << std::flush;
+			print_debug_line("DBG -> [run_local]: Read failed, aborting.");
 		}
 	}
+
 	red_pwm.stop();
 	green_pwm.stop();
 	blue_pwm.stop();
-	std::cout << "\nExiting..." << std::endl;
+
+	print_debug_line("DBG -> [run_local]: Exiting.");
 } // run_local
 
 void Lightshow::run_tx(Lightshow::Config config) {
@@ -247,6 +266,14 @@ void Lightshow::run_tx(Lightshow::Config config) {
 	}
 	server_addr.set_address(config.server_addr);
 
+	// Calculate Cutoffs.
+	auto out_count = transformer.get_output_count();
+
+	size_t floor = config.floor * out_count / 100;
+	size_t lco   = config.low_cutoff * out_count / 100;
+	size_t mco   = config.mid_cutoff * out_count / 100;
+	size_t hco   = config.high_cutoff * out_count / 100;
+
 	// Setup keystate
 	auto current_key = config.initial_key;
 
@@ -264,19 +291,12 @@ void Lightshow::run_tx(Lightshow::Config config) {
 			// Get Channel outputs
 			fftw_complex* output = transformer.get_output(0);
 
-			auto   out_count = transformer.get_output_count();
-			size_t floor     = config.floor * out_count / 100;
-
-			size_t lco  = config.low_cutoff * out_count / 100;
 			double lsum = sum_samples(output, floor, lco);
-			lsum *= config.low_mult;
-
-			size_t mco  = config.mid_cutoff * out_count / 100;
 			double msum = sum_samples(output, lco, mco);
-			msum *= config.mid_mult;
-
-			size_t hco  = config.high_cutoff * out_count / 100;
 			double hsum = sum_samples(output, mco, hco);
+
+			msum *= config.mid_mult;
+			lsum *= config.low_mult;
 			hsum *= config.high_mult;
 
 			float r = (lsum > 1.0 ? 1.0 : lsum);
@@ -289,13 +309,10 @@ void Lightshow::run_tx(Lightshow::Config config) {
 			auto encrypted = TF::Crypto::encrypt(current_key,
 			                                     (uint8_t*)b_stream.data(),
 			                                     b_stream.length());
+
 			udp_out.send_to(server_addr,
 			                (uint8_t*)encrypted.data(),
 			                encrypted.length());
-
-			// udp_out.send_to(server_addr,
-			//                 (uint8_t*)b_stream.data(),
-			//                 b_stream.length());
 
 			current_key = packet.seed;
 
@@ -305,11 +322,13 @@ void Lightshow::run_tx(Lightshow::Config config) {
 			          << ", b (high) = " << std::setw(8) << b << '\r'
 			          << std::flush;
 		} else {
-			std::cout << "\nAborting Read...\n" << std::flush;
+			print_debug_line("DBG -> [run_tx]: Read failed, aborting.");
 		}
 	}
-	std::cout << "\nLast Key: " << std::hex << current_key << "\n";
-	std::cout << "Exiting..." << std::endl;
+
+	std::cout << "\nLast Key: 0x" << std::hex << current_key << "\n";
+
+	print_debug_line("DBG -> [run_tx]: Exiting.");
 } // run_tx
 
 void Lightshow::run_rx(Lightshow::Config config) {
@@ -381,5 +400,5 @@ void Lightshow::run_rx(Lightshow::Config config) {
 	green_pwm.stop();
 
 	// Neat.
-	std::cout << "Exiting..." << std::endl;
+	print_debug_line("DBG -> [run_rx]: Exiting.");
 }

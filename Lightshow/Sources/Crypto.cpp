@@ -6,11 +6,12 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/15 10:12:47 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/23 01:52:19 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/24 17:57:08 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Crypto.hpp"
+#include "ByteUtils.hpp"
 
 #include <bitset>
 #include <random>
@@ -63,6 +64,8 @@ TF::Crypto::encrypt(uint64_t seed, uint8_t* msg, size_t len) {
 
 		uint64_t e_char = padding ^ current_key;
 
+		e_char = TF::ByteUtils::to_big_endian(e_char);
+
 		encrypted.append((uint8_t*)&e_char, sizeof(e_char));
 
 		current_key = (current_key * msg[i]) ^ padding;
@@ -81,6 +84,8 @@ TF::Crypto::decrypt(uint64_t seed, uint8_t* msg, size_t len) {
 		auto offset = get_byte_offset(current_key);
 
 		uint64_t e_char = *((uint64_t*)(&msg[i]));
+
+		e_char = TF::ByteUtils::from_big_endian(e_char);
 
 		uint64_t padded = e_char ^ current_key;
 
