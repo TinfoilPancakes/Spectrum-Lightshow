@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/01 09:24:53 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/09 08:40:57 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/30 13:05:08 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,10 @@
 #include <unistd.h>
 
 using namespace TF::Network;
-using namespace TF::Debug;
 
 Socket::Socket() {
+	using TF::Debug::print_error_line;
+
 	this->socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
 
 	if (this->socket_fd < 0) {
@@ -51,6 +52,7 @@ Socket::~Socket() {
 };
 
 void Socket::listen_method(Socket* socket, size_t buffer_size) {
+	using TF::Debug::print_warning_line;
 
 	std::vector<uint8_t> buffer_obj;
 	buffer_obj.resize(buffer_size);
@@ -110,6 +112,8 @@ void Socket::listen_method(Socket* socket, size_t buffer_size) {
 }
 
 void Socket::listen(size_t buffer_size) {
+	using TF::Debug::print_debug_line;
+	using TF::Debug::print_error_line;
 
 	t_sockaddr_in address;
 	bzero(&address, sizeof(t_sockaddr_in));
@@ -158,6 +162,8 @@ void Socket::listen(size_t buffer_size) {
 }
 
 void Socket::stop() {
+	using TF::Debug::print_debug_line;
+
 	if (!this->listener_thread.joinable())
 		return;
 
@@ -177,6 +183,8 @@ void Socket::stop() {
 bool Socket::send_to(SocketAddress  address,
                      const uint8_t* msg_buffer,
                      size_t         msg_length) {
+
+	using TF::Debug::print_error_line;
 
 	auto addr_struct = address.get_struct();
 	auto sent        = sendto(this->socket_fd,

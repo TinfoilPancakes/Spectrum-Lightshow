@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/11 13:03:56 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/16 13:03:45 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/30 12:11:18 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,19 +30,11 @@ struct s_network_packet {
 
 using NetworkPacket = struct s_network_packet;
 
-NetworkPacket create_packet(float r, float g, float b);
+void run_local(Config& config);
 
-std::basic_string<uint8_t> build_remote_msg(NetworkPacket packet);
+void run_tx(Config& config);
 
-NetworkPacket extract_remote_msg(uint8_t* msg, size_t len);
-
-double sum_samples(fftw_complex* samples, size_t start_idx, size_t end_idx);
-
-void run_local(Config config);
-
-void run_tx(Config config);
-
-void run_rx(Config config);
+void run_rx(Config& config);
 
 } // namespace Lightshow
 

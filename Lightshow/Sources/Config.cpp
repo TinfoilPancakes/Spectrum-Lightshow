@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/04 09:39:06 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/23 12:22:21 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/30 12:45:18 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 #include "DebugTools.hpp"
 
 using namespace Lightshow;
-using namespace TF::Debug;
 
+namespace {
 constexpr auto k_section = "lightshow_pi";
 
 constexpr auto k_is_local  = "b_is_local";
@@ -38,12 +38,15 @@ constexpr auto k_high_cutoff = "f_high_cutoff";
 constexpr auto k_low_mult  = "f_low_mult";
 constexpr auto k_mid_mult  = "f_mid_mult";
 constexpr auto k_high_mult = "f_high_mult";
+} // namespace
 
 Config::Config(const std::string& filepath) {
 	this->load_config_file(filepath);
 }
 
 bool Config::load_config_file(const std::string& file) {
+	using TF::Debug::print_error_line;
+
 	INIReader reader(file);
 
 	if (reader.ParseError()) {

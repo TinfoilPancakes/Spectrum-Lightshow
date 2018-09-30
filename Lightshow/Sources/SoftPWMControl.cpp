@@ -14,7 +14,6 @@
 #include "DebugTools.hpp"
 
 using namespace Lightshow;
-using namespace TF::Debug;
 
 void SoftPWMControl::execute(SoftPWMControl* controller) {
 
@@ -35,6 +34,8 @@ void SoftPWMControl::execute(SoftPWMControl* controller) {
 }
 
 void SoftPWMControl::launch_thread() {
+	using TF::Debug::print_warning_line;
+
 	if (this->to_continue)
 		print_warning_line(
 		    "WRN -> [SoftPWMControl::launch_thread]: Thread already started.");

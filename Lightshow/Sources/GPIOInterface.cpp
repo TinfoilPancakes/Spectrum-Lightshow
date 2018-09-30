@@ -17,7 +17,6 @@
 #include <thread>
 
 using namespace Lightshow;
-using namespace TF::Debug;
 
 GPIOInterface::GPIOInterface(const std::string& pin_id, int8_t direction) {
 	this->pin_id = pin_id;
@@ -42,6 +41,9 @@ GPIOInterface::~GPIOInterface() {
 }
 
 bool GPIOInterface::enable() {
+	using TF::Debug::print_debug_line;
+	using TF::Debug::print_error_line;
+
 	std::string   path = GPIO_SYSTEM_DIR "export";
 	std::ofstream export_stream(path.c_str());
 
@@ -62,6 +64,9 @@ bool GPIOInterface::enable() {
 }
 
 bool GPIOInterface::disable() {
+	using TF::Debug::print_debug_line;
+	using TF::Debug::print_error_line;
+
 	std::string   path = GPIO_SYSTEM_DIR "unexport";
 	std::ofstream unexport_stream(path.c_str());
 
@@ -82,6 +87,7 @@ bool GPIOInterface::disable() {
 }
 
 bool GPIOInterface::destroy_io_stream() {
+	using TF::Debug::print_debug_line;
 
 	print_debug_line("DBG -> [GPIOInterface::destroy_io_stream]: ",
 	                 "Closing I/O streams for pin #",
@@ -97,6 +103,9 @@ bool GPIOInterface::destroy_io_stream() {
 }
 
 bool GPIOInterface::init_io_stream() {
+	using TF::Debug::print_debug_line;
+	using TF::Debug::print_error_line;
+
 	std::string path = GPIO_SYSTEM_DIR "gpio" + this->pin_id + "/value";
 
 	print_debug_line("DBG -> [GPIOInterface::init_io_stream]: ",
@@ -116,6 +125,9 @@ bool GPIOInterface::init_io_stream() {
 }
 
 bool GPIOInterface::set_direction(int8_t direction) {
+	using TF::Debug::print_debug_line;
+	using TF::Debug::print_error_line;
+
 	std::string   path = GPIO_SYSTEM_DIR "gpio" + this->pin_id + "/direction";
 	std::ofstream direction_stream(path.c_str());
 

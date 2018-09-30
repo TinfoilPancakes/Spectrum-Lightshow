@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/03/01 04:38:15 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/19 11:18:17 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/30 11:47:46 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 #include "DebugTools.hpp"
 
 using namespace Lightshow;
-using namespace TF::Debug;
 
 namespace {
 
@@ -71,6 +70,7 @@ PASampleSpec PulseAudioSource::default_spec = {.format   = PA_SAMPLE_S16NE,
                                                .channels = 2};
 
 std::string PulseAudioSource::get_default_source_name() {
+	using TF::Debug::print_error_line;
 
 	Bento helper_box;
 
@@ -116,6 +116,9 @@ PulseAudioSource::PulseAudioSource(
     const pa_channel_map* audio_channel_mapping,
     const pa_buffer_attr* sample_buffer_attribs) {
 
+	using TF::Debug::print_debug_line;
+	using TF::Debug::print_error_line;
+
 	this->pulse_ptr = pa_simple_new(nullptr,
 	                                application_name.c_str(),
 	                                PA_STREAM_RECORD,
@@ -151,6 +154,8 @@ PulseAudioSource::~PulseAudioSource() {
 }
 
 bool PulseAudioSource::read_into(void* buffer, size_t buffer_size) {
+	using TF::Debug::print_error_line;
+
 	if (this->pulse_ptr == nullptr) {
 		print_error_line("ERR -> [PulseAudioSource::read_into]: Attempted read "
 		                 "of invalid source.");

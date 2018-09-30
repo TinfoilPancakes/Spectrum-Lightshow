@@ -6,7 +6,7 @@
 /*   By: prp <tfm357@gmail.com>                    --`---'-------------       */
 /*                                                 54 69 6E 66 6F 69 6C       */
 /*   Created: 2018/09/15 10:12:47 by prp              2E 54 65 63 68          */
-/*   Updated: 2018/09/24 18:16:13 by prp              50 2E 52 2E 50          */
+/*   Updated: 2018/09/30 11:48:09 by prp              50 2E 52 2E 50          */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,6 @@
 #include <random>
 
 using namespace TF::Crypto;
-using TF::ByteUtils::from_big_endian;
-using TF::ByteUtils::to_big_endian;
 
 uint8_t get_byte_offset(uint64_t seed) {
 
@@ -43,6 +41,8 @@ uint8_t get_byte_offset(uint64_t seed) {
 
 std::basic_string<uint8_t>
 TF::Crypto::encrypt(uint64_t seed, uint8_t* msg, size_t len) {
+	using TF::ByteUtils::to_big_endian;
+
 	std::random_device                      rd;
 	std::mt19937_64                         mt_generator(rd());
 	std::uniform_int_distribution<uint64_t> dist(0, UINT64_MAX);
@@ -78,6 +78,8 @@ TF::Crypto::encrypt(uint64_t seed, uint8_t* msg, size_t len) {
 
 std::basic_string<uint8_t>
 TF::Crypto::decrypt(uint64_t seed, uint8_t* msg, size_t len) {
+	using TF::ByteUtils::from_big_endian;
+
 	std::basic_string<uint8_t> decrypted;
 
 	uint64_t current_key = seed;
